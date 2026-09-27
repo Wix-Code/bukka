@@ -106,7 +106,7 @@ export default function Home() {
 
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
-                href="/signup"
+                href="/register"
                 className="bg-green-600 text-white px-7 py-4 rounded-full font-medium hover:bg-green-700 transition"
               >
                 Create My Menu
@@ -303,7 +303,7 @@ export default function Home() {
             Set up your menu today and start your 14-day free trial.
           </p>
           <Link
-            href="/signup"
+            href="/register"
             className="inline-block mt-8 bg-white text-gray-900 px-8 py-4 rounded-full font-medium hover:bg-white/90 transition"
           >
             Create My Menu

@@ -1,0 +1,59 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home2, Shop, Bag2 } from "iconsax-react";
+import LogoutButton from "./LogoutButton";
+
+const navItems = [
+  { label: "Overview", href: "/admin-dashboard", icon: Home2 },
+  { label: "Vendors", href: "/admin-dashboard/vendors", icon: Shop },
+  { label: "Orders", href: "/admin-dashboard/orders", icon: Bag2 },
+];
+
+export default function AdminSidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col justify-between bg-gray-900 border-r border-gray-800 h-screen sticky top-0 px-5 py-8">
+      <div>
+        <Link
+          href="/admin"
+          className="block font-bold text-xl text-white px-2 mb-10"
+        >
+          Bukka <span className="text-gray-500 font-normal">Admin</span>
+        </Link>
+
+        <nav className="space-y-1">
+          {navItems.map((item) => {
+            const active = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                  active
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
+                }`}
+              >
+                <Icon
+                  size={20}
+                  color="currentColor"
+                  variant={active ? "Bold" : "Linear"}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      <LogoutButton
+        redirectTo="/admin/login"
+        className="!text-gray-400 hover:!bg-gray-800/60 hover:!text-red-400"
+      />
+    </aside>
+  );
+}

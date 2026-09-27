@@ -31,7 +31,7 @@ export default function Navbar() {
         </div>
 
         {/* CTA Button */}
-        <button
+        <Link href={"/login"}
           className="
           bg-green-600 
           hover:bg-green-700 
@@ -46,7 +46,7 @@ export default function Navbar() {
           "
         >
           Get Started
-        </button>
+        </Link>
       </div>
     </nav>
   );
