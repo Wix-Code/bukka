@@ -8,33 +8,38 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-export type PlanName = "Starter" | "Growth" | "Business";
-
-const plans: { name: PlanName; price: number; description: string }[] = [
-  { name: "Starter", price: 5000, description: "Up to 30 menu items." },
-  {
-    name: "Growth",
-    price: 12000,
-    description: "Unlimited items + analytics.",
-  },
-  { name: "Business", price: 25000, description: "Up to 5 outlets." },
-];
+import { PLANS, PLAN_ORDER, type PlanKey } from "@/components/Plan";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentPlan: PlanName;
-  onSelectPlan: (plan: PlanName) => void;
+  currentPlan: PlanKey;
+  onConfirm: (plan: PlanKey) => Promise<void>;
 };
 
 export default function ChangePlanDialog({
   open,
   onOpenChange,
   currentPlan,
-  onSelectPlan,
+  onConfirm,
 }: Props) {
-  const [selected, setSelected] = useState<PlanName>(currentPlan);
+  const [selected, setSelected] = useState<PlanKey>(currentPlan);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await onConfirm(selected);
+      // On success the browser navigates away to Paystack's checkout —
+      // nothing left to do here.
+    } catch (err) {
+      setSubmitting(false);
+      setError(err instanceof Error ? err.message : "Couldn't start checkout.");
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -44,13 +49,14 @@ export default function ChangePlanDialog({
         </DialogHeader>
 
         <div className="grid sm:grid-cols-3 gap-3 mt-2">
-          {plans.map((plan) => {
-            const isSelected = selected === plan.name;
+          {PLAN_ORDER.map((key) => {
+            const plan = PLANS[key];
+            const isSelected = selected === key;
             return (
               <button
-                key={plan.name}
+                key={key}
                 type="button"
-                onClick={() => setSelected(plan.name)}
+                onClick={() => setSelected(key)}
                 className={`text-left rounded-2xl border p-4 transition ${
                   isSelected
                     ? "border-green-600 ring-2 ring-green-100 bg-green-50/40"
@@ -62,28 +68,36 @@ export default function ChangePlanDialog({
                   ₦{plan.price.toLocaleString()}
                   <span className="text-sm font-normal text-gray-500">/mo</span>
                 </p>
-                <p className="mt-1 text-xs text-gray-500">{plan.description}</p>
               </button>
             );
           })}
         </div>
 
-        <DialogFooter className="mt-6">
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-red-600">
+            {error}
+          </p>
+        )}
+
+        <p className="mt-3 text-xs text-gray-400">
+          You&rsquo;ll be taken to Paystack to complete payment securely. Your
+          plan updates once payment is confirmed.
+        </p>
+
+        <DialogFooter className="mt-4">
           <button
             onClick={() => onOpenChange(false)}
-            className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+            disabled={submitting}
+            className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              onSelectPlan(selected);
-              onOpenChange(false);
-            }}
-            disabled={selected === currentPlan}
+            onClick={handleConfirm}
+            disabled={submitting || selected === currentPlan}
             className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            Confirm change
+            {submitting ? "Redirecting…" : "Continue to payment"}
           </button>
         </DialogFooter>
       </DialogContent>

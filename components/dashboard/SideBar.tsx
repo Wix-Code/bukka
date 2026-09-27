@@ -13,8 +13,9 @@ export default function Sidebar() {
       <div>
         <Link
           href="/dashboard"
-          className="block font-bold text-xl text-gray-900 px-2 mb-10"
+          className="block font-bold flex items-center gap-2 text-xl text-gray-900 px-2 mb-10"
         >
+          <img className="w-[80px]" src="/images/logo.png" />
           Bukka
         </Link>
 
