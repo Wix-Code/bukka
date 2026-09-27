@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import Input from "@/components/reusuable/InputProps";
+import ImageUpload from "@/components/reusuable/ImageUpload";
 
 export default function Onboarding() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
+  const [vendorId, setVendorId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     description: "",
@@ -19,6 +23,16 @@ export default function Onboarding() {
     coverImage: "",
   });
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) {
+        router.push("/login");
+        return;
+      }
+      setVendorId(data.user.id);
+    });
+  }, [router]);
+
   function next(e: FormEvent) {
     e.preventDefault();
     setStep(2);
@@ -26,10 +40,28 @@ export default function Onboarding() {
 
   async function finish(e: FormEvent) {
     e.preventDefault();
-    setSaving(true);
+    if (!vendorId) return;
 
-    // TODO: persist `form` to the vendor's row in Supabase.
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    setSaving(true);
+    setError(null);
+
+    const { error } = await supabase
+      .from("vendors")
+      .update({
+        description: form.description,
+        location: form.location,
+        opening_hours: form.openingHours,
+        phone: form.phone,
+        cover_image: form.coverImage,
+      })
+      .eq("id", vendorId);
+
+    setSaving(false);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
 
     router.push("/dashboard");
   }
@@ -133,16 +165,23 @@ export default function Onboarding() {
                   required
                 />
 
-                <Input
-                  label="Cover image URL"
-                  type="url"
-                  placeholder="https://..."
-                  hint="A wide photo for the top of your menu page."
-                  value={form.coverImage}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, coverImage: e.target.value }))
-                  }
-                />
+                {vendorId && (
+                  <ImageUpload
+                    label="Cover photo"
+                    value={form.coverImage}
+                    onChange={(url) =>
+                      setForm((f) => ({ ...f, coverImage: url }))
+                    }
+                    pathPrefix={`${vendorId}/cover`}
+                    hint="A wide photo for the top of your menu page."
+                  />
+                )}
+
+                {error && (
+                  <p role="alert" className="mb-4 text-sm text-red-600">
+                    {error}
+                  </p>
+                )}
 
                 <div className="flex gap-3 mt-6">
                   <button
@@ -154,7 +193,7 @@ export default function Onboarding() {
                   </button>
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={saving || !vendorId}
                     className="flex-1 bg-green-600 text-white py-4 rounded-full font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
                     {saving ? "Setting up…" : "Finish setup"}

@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import Input from "@/components/reusuable/InputProps";
+import ImageUpload from "@/components/reusuable/ImageUpload";
 
 export type Dish = {
   id: string;
@@ -24,7 +25,10 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dish: Dish | null; // null = adding a new dish
-  onSave: (dish: Dish) => void;
+  vendorId: string;
+  // Returns an error message on failure, or null on success. The dialog
+  // stays open and shows the error if this doesn't resolve to null.
+  onSave: (values: Omit<Dish, "id">, id?: string) => Promise<string | null>;
 };
 
 const emptyDish: Omit<Dish, "id"> = {
@@ -39,9 +43,12 @@ export default function DishFormDialog({
   open,
   onOpenChange,
   dish,
+  vendorId,
   onSave,
 }: Props) {
   const [form, setForm] = useState<Omit<Dish, "id">>(emptyDish);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (dish) {
@@ -50,11 +57,23 @@ export default function DishFormDialog({
     } else {
       setForm(emptyDish);
     }
+    setSaveError(null);
   }, [dish, open]);
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSave({ id: dish?.id ?? crypto.randomUUID(), ...form });
+    setSaving(true);
+    setSaveError(null);
+
+    const error = await onSave(form, dish?.id);
+
+    setSaving(false);
+
+    if (error) {
+      setSaveError(error);
+      return;
+    }
+
     onOpenChange(false);
   }
 
@@ -101,13 +120,12 @@ export default function DishFormDialog({
             required
           />
 
-          <Input
-            label="Image URL"
-            type="url"
+          <ImageUpload
+            label="Dish photo"
             value={form.image}
-            onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
-            placeholder="https://..."
-            hint="Paste a link to a photo of the dish."
+            onChange={(url) => setForm((f) => ({ ...f, image: url }))}
+            pathPrefix={`${vendorId}/dishes`}
+            hint="JPG or PNG works best."
           />
 
           <label className="flex items-center gap-2.5 mb-2 cursor-pointer">
@@ -122,6 +140,12 @@ export default function DishFormDialog({
             <span className="text-sm text-gray-700">Available on the menu</span>
           </label>
 
+          {saveError && (
+            <p role="alert" className="mt-2 text-sm text-red-600">
+              {saveError}
+            </p>
+          )}
+
           <DialogFooter className="mt-6">
             <button
               type="button"
@@ -132,9 +156,10 @@ export default function DishFormDialog({
             </button>
             <button
               type="submit"
-              className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 transition"
+              disabled={saving}
+              className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              {dish ? "Save changes" : "Add dish"}
+              {saving ? "Saving…" : dish ? "Save changes" : "Add dish"}
             </button>
           </DialogFooter>
         </form>

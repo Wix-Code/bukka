@@ -1,55 +1,95 @@
+import { redirect } from "next/navigation";
+import { Wallet2, Bag2, Book1, Clock } from "iconsax-react";
 import MenuQRCard from "@/components/dashboard/MenuQrCode";
-import { Wallet2, Bag2, Book1, Eye } from "iconsax-react";
-
-const stats = [
-  { label: "Revenue this month", value: "₦248,500", icon: Wallet2 },
-  { label: "Orders this month", value: "132", icon: Bag2 },
-  { label: "Menu items", value: "18", icon: Book1 },
-  { label: "Menu views", value: "1,204", icon: Eye },
-];
-
-const recentOrders = [
-  {
-    id: "BK-1042",
-    customer: "Ada O.",
-    item: "Jollof Rice & Chicken",
-    amount: 3500,
-    status: "Pending",
-  },
-  {
-    id: "BK-1041",
-    customer: "Femi A.",
-    item: "Pepper Soup",
-    amount: 4200,
-    status: "Completed",
-  },
-  {
-    id: "BK-1040",
-    customer: "Chidera N.",
-    item: "Fried Rice",
-    amount: 3000,
-    status: "Completed",
-  },
-  {
-    id: "BK-1039",
-    customer: "Tunde B.",
-    item: "Suya Platter",
-    amount: 5000,
-    status: "Cancelled",
-  },
-];
+import { createSupabaseServerClient } from "@/lib/server";
 
 const statusStyles: Record<string, string> = {
-  Pending: "bg-yellow-50 text-yellow-700",
-  Completed: "bg-green-50 text-green-700",
-  Cancelled: "bg-red-50 text-red-700",
+  pending: "bg-yellow-50 text-yellow-700",
+  completed: "bg-green-50 text-green-700",
+  cancelled: "bg-red-50 text-red-700",
 };
 
-export default function DashboardOverview() {
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleString("en-NG", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export default async function DashboardOverview() {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const [
+    { data: vendor },
+    { data: monthOrders },
+    { count: menuItemCount },
+    { data: recentOrders },
+  ] = await Promise.all([
+    supabase.from("vendors").select("name, slug").eq("id", user.id).single(),
+    supabase
+      .from("orders")
+      .select("item_price, status")
+      .eq("vendor_id", user.id)
+      .gte("created_at", startOfMonth.toISOString()),
+    supabase
+      .from("menu_items")
+      .select("id", { count: "exact", head: true })
+      .eq("vendor_id", user.id),
+    supabase
+      .from("orders")
+      .select("id, item_name, item_price, status, created_at")
+      .eq("vendor_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+
+  const ordersThisMonth = monthOrders ?? [];
+  const revenueThisMonth = ordersThisMonth
+    .filter((o) => o.status === "completed")
+    .reduce((sum, o) => sum + Number(o.item_price), 0);
+  const pendingOrders = ordersThisMonth.filter(
+    (o) => o.status === "pending"
+  ).length;
+
+  const stats = [
+    {
+      label: "Revenue this month",
+      value: `₦${revenueThisMonth.toLocaleString()}`,
+      icon: Wallet2,
+    },
+    {
+      label: "Orders this month",
+      value: ordersThisMonth.length.toString(),
+      icon: Bag2,
+    },
+    {
+      label: "Menu items",
+      value: (menuItemCount ?? 0).toString(),
+      icon: Book1,
+    },
+    {
+      label: "Pending orders",
+      value: pendingOrders.toString(),
+      icon: Clock,
+    },
+  ];
+
   return (
     <div>
       <p className="text-gray-500 mb-8">
-        Here&rsquo;s how Mama Grace&rsquo;s Kitchen is doing today.
+        Here&rsquo;s how {vendor?.name ?? "your restaurant"} is doing today.
       </p>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -72,49 +112,57 @@ export default function DashboardOverview() {
         })}
       </div>
 
-      <MenuQRCard />
+      {vendor?.slug && <MenuQRCard slug={vendor.slug} />}
 
       <div className="bg-white rounded-2xl shadow-sm mt-8 overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100">
           <h2 className="font-bold text-gray-900">Recent orders</h2>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-500">
-                <th className="px-6 py-3 font-medium">Order</th>
-                <th className="px-6 py-3 font-medium">Customer</th>
-                <th className="px-6 py-3 font-medium">Item</th>
-                <th className="px-6 py-3 font-medium">Amount</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {recentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 text-gray-900 font-medium">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{order.customer}</td>
-                  <td className="px-6 py-4 text-gray-600">{order.item}</td>
-                  <td className="px-6 py-4 text-gray-900">
-                    ₦{order.amount.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        statusStyles[order.status]
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
+        {!recentOrders || recentOrders.length === 0 ? (
+          <div className="p-12 text-center text-gray-500">
+            No orders yet — they&rsquo;ll show up here once a customer orders
+            from your menu.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500">
+                  <th className="px-6 py-3 font-medium">Item</th>
+                  <th className="px-6 py-3 font-medium">Amount</th>
+                  <th className="px-6 py-3 font-medium">Placed</th>
+                  <th className="px-6 py-3 font-medium">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recentOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="px-6 py-4 text-gray-900 font-medium">
+                      {order.item_name}
+                    </td>
+                    <td className="px-6 py-4 text-gray-900">
+                      ₦{Number(order.item_price).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {formatTime(order.created_at)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                          statusStyles[order.status]
+                        }`}
+                      >
+                        {order.status.charAt(0).toUpperCase() +
+                          order.status.slice(1)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
