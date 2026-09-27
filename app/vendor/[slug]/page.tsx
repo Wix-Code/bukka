@@ -55,12 +55,14 @@ import MenuSection from "@/components/reusuable/MenuSection";
 const FALLBACK_COVER_IMAGE =
   "https://images.unsplash.com/photo-1600891964092-4316c288032e";
 
-type Props = { params: { slug: string } };
-
+type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const vendor = await getVendorBySlug(params.slug);
-  if (!vendor) return {};
-
+  const { slug } = await params;
+  const vendor = await getVendorBySlug(slug);
+  console.log(vendor, "Vendor is here");
+  if (!vendor) {
+    return {};
+  }
   return {
     title: `${vendor.name} | Bukka`,
     description: vendor.description || `Order from ${vendor.name} on Bukka.`,
@@ -68,13 +70,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function VendorPage({ params }: Props) {
-  const vendor = await getVendorBySlug(params.slug);
-  if (!vendor) notFound();
-
+  const { slug } = await params;
+  const vendor = await getVendorBySlug(slug);
+  if (!vendor) {
+    notFound();
+  }
   const dishes = await getVendorMenu(vendor.id);
-
+  console.log(dishes, "dishes is here");
   return (
-    <main className="bg-[#fffdf7] min-h-screen">
+    <main className="min-h-screen bg-[#fffdf7]">
+      {" "}
       <VendorHeader
         vendor={{
           name: vendor.name,
@@ -83,13 +88,12 @@ export default async function VendorPage({ params }: Props) {
           openingHours: vendor.opening_hours,
           image: vendor.cover_image || FALLBACK_COVER_IMAGE,
         }}
-      />
-
-      <MenuSection dishes={dishes} phone={vendor.phone} vendorId={vendor.id} />
-
-      <footer className="text-center pb-10">
-        <p className="text-xs text-gray-400">Powered by Bukka</p>
-      </footer>
+      />{" "}
+      <MenuSection dishes={dishes} phone={vendor.phone} vendorId={vendor.id} />{" "}
+      <footer className="pb-10 text-center">
+        {" "}
+        <p className="text-xs text-gray-400">Powered by Bukka</p>{" "}
+      </footer>{" "}
     </main>
   );
 }
