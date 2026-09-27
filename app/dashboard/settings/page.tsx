@@ -1,0 +1,108 @@
+"use client";
+
+import { useState } from "react";
+import type { FormEvent } from "react";
+import ChangePasswordDialog from "@/components/dashboard/setting/ChangePasswordDialog";
+import Input from "@/components/reusuable/InputProps";
+
+export default function SettingsPage() {
+  const [form, setForm] = useState({
+    name: "Mama Grace's Kitchen",
+    description: "Home-cooked Nigerian meals, made fresh daily.",
+    location: "Wuse 2, Abuja",
+    openingHours: "9am - 9pm",
+    phone: "2348012345678",
+  });
+  const [saved, setSaved] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    // TODO: persist to Supabase — this only simulates a save for now.
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div className="max-w-lg">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
+      <p className="text-sm text-gray-500 mb-8">
+        Update how your restaurant appears to customers.
+      </p>
+
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-2xl shadow-sm p-6"
+      >
+        <Input
+          label="Restaurant name"
+          value={form.name}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+        />
+
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 mb-1.5">
+            Description
+          </label>
+          <textarea
+            value={form.description}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, description: e.target.value }))
+            }
+            rows={3}
+            className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition resize-none"
+          />
+        </div>
+
+        <Input
+          label="Location"
+          value={form.location}
+          onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+        />
+
+        <Input
+          label="Opening hours"
+          value={form.openingHours}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, openingHours: e.target.value }))
+          }
+        />
+
+        <Input
+          label="WhatsApp number"
+          value={form.phone}
+          onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+          hint="Include country code, e.g. 2348012345678"
+        />
+
+        <button
+          type="submit"
+          className="mt-2 bg-green-600 text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-green-700 transition"
+        >
+          {saved ? "Saved" : "Save changes"}
+        </button>
+      </form>
+
+      <div className="bg-white rounded-2xl shadow-sm p-6 mt-6 flex items-center justify-between gap-4">
+        <div>
+          <p className="font-bold text-gray-900">Password</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Change the password you use to log in.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setPasswordDialogOpen(true)}
+          className="border border-gray-200 px-5 py-2.5 rounded-full text-sm font-medium text-gray-900 hover:border-gray-300 transition whitespace-nowrap"
+        >
+          Change password
+        </button>
+      </div>
+
+      <ChangePasswordDialog
+        open={passwordDialogOpen}
+        onOpenChange={setPasswordDialogOpen}
+      />
+    </div>
+  );
+}

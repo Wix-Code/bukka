@@ -1,20 +1,11 @@
-import MenuQRCard from "@/components/dashboard/MenuQrCode";
-import { Wallet2, Bag2, Book1, Eye } from "iconsax-react";
-
-const stats = [
-  { label: "Revenue this month", value: "₦248,500", icon: Wallet2 },
-  { label: "Orders this month", value: "132", icon: Bag2 },
-  { label: "Menu items", value: "18", icon: Book1 },
-  { label: "Menu views", value: "1,204", icon: Eye },
-];
-
-const recentOrders = [
+const orders = [
   {
     id: "BK-1042",
     customer: "Ada O.",
     item: "Jollof Rice & Chicken",
     amount: 3500,
     status: "Pending",
+    time: "10 mins ago",
   },
   {
     id: "BK-1041",
@@ -22,6 +13,7 @@ const recentOrders = [
     item: "Pepper Soup",
     amount: 4200,
     status: "Completed",
+    time: "1 hr ago",
   },
   {
     id: "BK-1040",
@@ -29,6 +21,7 @@ const recentOrders = [
     item: "Fried Rice",
     amount: 3000,
     status: "Completed",
+    time: "3 hrs ago",
   },
   {
     id: "BK-1039",
@@ -36,6 +29,7 @@ const recentOrders = [
     item: "Suya Platter",
     amount: 5000,
     status: "Cancelled",
+    time: "Yesterday",
   },
 ];
 
@@ -45,40 +39,15 @@ const statusStyles: Record<string, string> = {
   Cancelled: "bg-red-50 text-red-700",
 };
 
-export default function DashboardOverview() {
+export default function OrdersPage() {
   return (
     <div>
-      <p className="text-gray-500 mb-8">
-        Here&rsquo;s how Mama Grace&rsquo;s Kitchen is doing today.
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Orders</h1>
+      <p className="text-sm text-gray-500 mb-8">
+        All orders placed through your menu.
       </p>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.label}
-              className="bg-white rounded-2xl p-5 shadow-sm"
-            >
-              <div className="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
-                <Icon size={20} color="currentColor" variant="Bold" />
-              </div>
-              <p className="mt-4 text-2xl font-bold text-gray-900">
-                {stat.value}
-              </p>
-              <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <MenuQRCard />
-
-      <div className="bg-white rounded-2xl shadow-sm mt-8 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100">
-          <h2 className="font-bold text-gray-900">Recent orders</h2>
-        </div>
-
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -88,10 +57,11 @@ export default function DashboardOverview() {
                 <th className="px-6 py-3 font-medium">Item</th>
                 <th className="px-6 py-3 font-medium">Amount</th>
                 <th className="px-6 py-3 font-medium">Status</th>
+                <th className="px-6 py-3 font-medium">Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {recentOrders.map((order) => (
+              {orders.map((order) => (
                 <tr key={order.id}>
                   <td className="px-6 py-4 text-gray-900 font-medium">
                     {order.id}
@@ -110,6 +80,7 @@ export default function DashboardOverview() {
                       {order.status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 text-gray-400">{order.time}</td>
                 </tr>
               ))}
             </tbody>
