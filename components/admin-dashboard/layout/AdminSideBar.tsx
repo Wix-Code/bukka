@@ -15,13 +15,14 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex w-64 shrink-0 flex-col justify-between bg-gray-900 border-r border-gray-800 h-screen sticky top-0 px-5 py-8">
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col justify-between bg-white border-r border-gray-100 h-screen sticky top-0 px-5 py-8">
       <div>
         <Link
-          href="/admin"
-          className="block font-bold text-xl text-white px-2 mb-10"
+          href="/admin-dashboard"
+          className="block font-bold text-xl text-gray-900 px-2 mb-10"
         >
-          Bukka <span className="text-gray-500 font-normal">Admin</span>
+          <img className="w-[80px]" src={"/images/logo.png"} />
+          Bukka <span className="text-gray-400 font-normal">Admin</span>
         </Link>
 
         <nav className="space-y-1">
@@ -34,8 +35,8 @@ export default function AdminSidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                   active
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
+                    ? "bg-green-50 text-green-700"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
                 <Icon
@@ -50,10 +51,7 @@ export default function AdminSidebar() {
         </nav>
       </div>
 
-      <LogoutButton
-        redirectTo="/admin/login"
-        className="!text-gray-400 hover:!bg-gray-800/60 hover:!text-red-400"
-      />
+      <LogoutButton redirectTo="/admin/login" />
     </aside>
   );
 }

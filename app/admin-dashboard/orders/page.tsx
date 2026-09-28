@@ -1,9 +1,9 @@
 import { createSupabaseAdminClient } from "@/lib/admin";
 
 const statusStyles: Record<string, string> = {
-  pending: "bg-yellow-900/40 text-yellow-400",
-  completed: "bg-green-900/40 text-green-400",
-  cancelled: "bg-red-900/40 text-red-400",
+  pending: "bg-yellow-50 text-yellow-700",
+  completed: "bg-green-50 text-green-700",
+  cancelled: "bg-red-50 text-red-700",
 };
 
 function formatTime(iso: string) {
@@ -20,24 +20,39 @@ export default async function AdminOrdersPage() {
 
   // Embeds the related vendor row via the orders.vendor_id foreign key,
   // so each row can show which restaurant the order belongs to.
-  const { data: orders } = await supabase
+  const { data: orders, error } = await supabase
     .from("orders")
     .select("id, item_name, item_price, status, created_at, vendors(name)")
     .order("created_at", { ascending: false })
     .limit(100);
 
+  if (error) console.error("Admin orders query failed:", error.message);
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-1">Orders</h1>
-      <p className="text-sm text-gray-400 mb-8">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Orders</h1>
+      <p className="text-sm text-gray-500 mb-8">
         The last 100 orders across every vendor. Read-only — status changes
         belong to the vendor, not the platform.
       </p>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      {error && (
+        <div className="mb-6 rounded-2xl bg-red-50 text-red-700 text-sm px-4 py-3">
+          Couldn&rsquo;t load orders: {error.message}
+          <br />
+          <span className="text-red-600/70">
+            This usually means SUPABASE_SERVICE_ROLE_KEY is missing, wrong, or
+            the dev server needs a restart after adding it.
+          </span>
+        </div>
+      )}
+
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {!orders || orders.length === 0 ? (
           <div className="p-12 text-center text-gray-500">
-            No orders yet across the platform.
+            {error
+              ? "Couldn't load orders — see the error above."
+              : "No orders yet across the platform."}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -51,17 +66,17 @@ export default async function AdminOrdersPage() {
                   <th className="px-6 py-3 font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-gray-100">
                 {orders.map((order) => (
                   <tr key={order.id}>
-                    <td className="px-6 py-4 text-white font-medium">
+                    <td className="px-6 py-4 text-gray-900 font-medium">
                       {(order.vendors as unknown as { name: string } | null)
                         ?.name ?? "—"}
                     </td>
-                    <td className="px-6 py-4 text-gray-300">
+                    <td className="px-6 py-4 text-gray-600">
                       {order.item_name}
                     </td>
-                    <td className="px-6 py-4 text-gray-300">
+                    <td className="px-6 py-4 text-gray-900">
                       ₦{Number(order.item_price).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-gray-500">

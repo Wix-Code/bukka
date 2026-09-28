@@ -41,6 +41,14 @@ export default function MobileNav() {
         >
           Bukka
         </Link>
+        <Link
+          href="/dashboard"
+          onClick={() => setOpen(false)}
+          className="block font-bold text-xl text-gray-900 mb-10"
+        >
+          <img className="w-[50px] object-cover" src="/images/logo.png" />
+          Bukka
+        </Link>
 
         <nav className="space-y-1 flex-1">
           {navItems.map((item) => {

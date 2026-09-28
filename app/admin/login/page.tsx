@@ -53,9 +53,12 @@ function AdminLoginForm() {
       <div className="w-full max-w-[500px]">
         <Link
           href="/"
-          className="block text-center font-bold text-xl mb-8 text-gray-900"
+          className="block text-center flex items-center justify-center flex-col font-bold text-xl mb-8 text-gray-900"
         >
-          Bukka <span className="text-gray-400 font-normal">Admin</span>
+          <img className="w-[80px]" src={"/images/logo.png"} />
+          <p>
+            Bukka <span className="text-gray-400 font-normal">Admin</span>
+          </p>
         </Link>
 
         <div className="bg-white p-8 rounded-3xl shadow-xl">
