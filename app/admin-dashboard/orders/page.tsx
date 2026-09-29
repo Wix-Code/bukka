@@ -1,4 +1,6 @@
+import EmptyState from "@/components/reusuable/EmptyState";
 import { createSupabaseAdminClient } from "@/lib/admin";
+import { Dropbox } from "iconsax-react";
 
 const statusStyles: Record<string, string> = {
   pending: "bg-yellow-50 text-yellow-700",
@@ -48,11 +50,18 @@ export default async function AdminOrdersPage() {
       )}
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {!orders || orders.length === 0 ? (
+        {!orders || orders.length > 0 ? (
           <div className="p-12 text-center text-gray-500">
             {error
               ? "Couldn't load orders — see the error above."
-              : "No orders yet across the platform."}
+              : <div className="bg-white rounded-3xl">
+                  <EmptyState
+                    icon={<Dropbox size={28} color="#16A34A" />}
+                    title="No orders available"
+                    description="No orders yet, they&rsquo;ll show up here once a customer orders
+                from your menu."
+                  />
+                </div>}
           </div>
         ) : (
           <div className="overflow-x-auto">

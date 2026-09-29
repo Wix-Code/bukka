@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { Wallet2, Bag2, Book1, Clock } from "iconsax-react";
+import { Wallet2, Bag2, Book1, Clock, Dropbox } from "iconsax-react";
 import MenuQRCard from "@/components/dashboard/MenuQrCode";
 import { createSupabaseServerClient } from "@/lib/server";
+import EmptyState from "@/components/reusuable/EmptyState";
 
 const statusStyles: Record<string, string> = {
   pending: "bg-yellow-50 text-yellow-700",
@@ -119,11 +120,15 @@ export default async function DashboardOverview() {
           <h2 className="font-bold text-gray-900">Recent orders</h2>
         </div>
 
-        {!recentOrders || recentOrders.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            No orders yet — they&rsquo;ll show up here once a customer orders
-            from your menu.
-          </div>
+        {!recentOrders || recentOrders.length > 0 ? (
+           <div className="bg-white rounded-3xl">
+              <EmptyState
+                icon={<Dropbox size={28} color="#16A34A" />}
+                title="No orders available"
+                description="No orders yet, they&rsquo;ll show up here once a customer orders
+            from your menu."
+              />
+            </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

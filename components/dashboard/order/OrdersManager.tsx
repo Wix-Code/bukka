@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import EmptyState from "@/components/reusuable/EmptyState";
+import { Dropbox } from "iconsax-react";
 
 export type Order = {
   id: string;
@@ -65,10 +67,14 @@ export default function OrdersManager({
       )}
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {orders.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            No orders yet — they&rsquo;ll show up here the moment a customer
-            orders from your menu.
+        {orders.length > 0 ? (
+          <div className="bg-white rounded-3xl">
+            <EmptyState
+              icon={<Dropbox size={28} color="#16A34A" />}
+              title="No orders available"
+              description="No orders yet, they&rsquo;ll show up here once a customer orders
+          from your menu."
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">
