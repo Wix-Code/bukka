@@ -34,17 +34,17 @@ export default function MobileNav() {
           <SheetTitle className="sr-only">Navigation menu</SheetTitle>
         </SheetHeader>
 
-        <Link
+        {/* <Link
           href="/dashboard"
           onClick={() => setOpen(false)}
           className="block font-bold text-xl text-gray-900 mb-10"
         >
           Bukka
-        </Link>
+        </Link> */}
         <Link
           href="/dashboard"
           onClick={() => setOpen(false)}
-          className="block font-bold text-xl text-gray-900 mb-10"
+          className="block flex items-center font-bold text-xl text-gray-900 mb-10"
         >
           <img className="w-[50px] object-cover" src="/images/logo.png" />
           Bukka

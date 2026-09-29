@@ -182,9 +182,10 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Wallet2 } from "iconsax-react";
+import { Dropbox, Wallet2 } from "iconsax-react";
 import { PlanKey, PLANS } from "@/components/Plan";
 import ChangePlanDialog from "./ChangePlanDialog";
+import EmptyState from "@/components/reusuable/EmptyState";
 
 export type Invoice = {
   id: string;
@@ -301,7 +302,14 @@ export default function BillingManager({
         </div>
 
         {invoices.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">No payments yet.</div>
+          <div className="bg-white rounded-3xl">
+            <EmptyState
+              icon={<Dropbox size={28} color="#16A34A" />}
+              title="No payments yet"
+              description="No payments yet. Payment will show up here once you make payment
+          foe the plan you want."
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
