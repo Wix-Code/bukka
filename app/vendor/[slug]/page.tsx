@@ -89,7 +89,7 @@ export default async function VendorPage({ params }: Props) {
           image: vendor.cover_image || FALLBACK_COVER_IMAGE,
         }}
       />{" "}
-      <MenuSection dishes={dishes} phone={vendor.phone} vendorId={vendor.id} />{" "}
+      <MenuSection workingHours={vendor?.opening_hours} dishes={dishes} phone={vendor.phone} vendorId={vendor.id} />{" "}
       <footer className="pb-10 text-center">
         {" "}
         <p className="text-xs text-gray-400">Powered by Bukka</p>{" "}
