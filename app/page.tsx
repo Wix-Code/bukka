@@ -8,7 +8,7 @@ import { PLAN_ORDER, PlanKey, PLANS } from "@/components/Plan";
 const faqs = [
   {
     q: "Do I need a website or app already?",
-    a: "No. Bukka gives you a digital menu and ordering page out of the box — just share the link or print the QR code.",
+    a: "No. Bukka gives you a digital menu and ordering page out of the box, just share the link or print the QR code.",
   },
   {
     q: "How do orders reach me?",
@@ -52,7 +52,7 @@ export default function Home() {
 
             <p className="mt-6 text-lg text-gray-600 max-w-md">
               Give your customers a beautiful digital menu, receive WhatsApp
-              orders and grow your food business — no app or website needed.
+              orders and grow your food business, no app or website needed.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -121,7 +121,7 @@ export default function Home() {
           <FeatureCard
             icon={<QrIcon />}
             title="QR ordering"
-            description="Print a code for your table or storefront — customers scan and order in seconds."
+            description="Print a code for your table or storefront, customers scan and order in seconds."
           />
         </div>
       </section>
@@ -137,7 +137,7 @@ export default function Home() {
             <Step
               number={1}
               title="Build your menu"
-              description="Add your meals, prices and photos — takes about ten minutes."
+              description="Add your meals, prices and photos, takes about ten minutes."
             />
             <Step
               number={2}

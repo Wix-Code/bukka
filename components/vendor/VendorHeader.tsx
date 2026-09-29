@@ -1,3 +1,4 @@
+import { ArrowLeft } from "iconsax-react";
 import Link from "next/link";
 
 interface Props {
@@ -23,9 +24,9 @@ export default function VendorHeader({ vendor }: Props) {
 
       <Link
         href="/"
-        className="absolute z-10 top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-medium text-gray-900 hover:bg-white transition"
+        className="absolute z-10 flex items-center gap-1 top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-medium text-gray-900 hover:bg-white transition"
       >
-        ← Bukka
+        <ArrowLeft color="#000000" size={18} /> Bukka
       </Link>
 
       <div className="relative z-10 max-w-7xl mx-auto h-full flex items-end px-6 pb-10 text-white">

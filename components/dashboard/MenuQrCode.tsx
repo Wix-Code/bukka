@@ -145,7 +145,7 @@ export default function MenuQRCard({ slug }: { slug: string }) {
         <div className="flex flex-wrap gap-3 mt-4">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 border border-gray-200 px-4 py-2 rounded-full text-sm font-medium text-gray-900 hover:border-gray-300 transition"
+            className="flex items-center cursor-pointer gap-2 border border-gray-200 px-4 py-2 rounded-full text-sm font-medium text-gray-900 hover:border-gray-300 transition"
           >
             {copied ? (
               <TickCircle size={16} color="currentColor" variant="Bold" />
@@ -157,7 +157,7 @@ export default function MenuQRCard({ slug }: { slug: string }) {
 
           <button
             onClick={handleDownload}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-green-700 transition"
+            className="flex items-center gap-2 cursor-pointer bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-green-700 transition"
           >
             <DocumentDownload size={16} color="currentColor" />
             Download QR

@@ -68,9 +68,10 @@ export default function Signup() {
       <div className="w-full  max-w-[500px]">
         <Link
           href="/"
-          className="block text-center font-bold text-xl mb-8 text-gray-900"
+          className="block text-center flex items-center justify-center flex-col font-bold text-xl mb-8 text-gray-900"
         >
-          Bukka
+          <img className="w-[80px]" src={"/images/logo.png"} />
+          <p>Bukka</p>
         </Link>
 
         <div className="bg-white p-8 rounded-3xl shadow-xl">
