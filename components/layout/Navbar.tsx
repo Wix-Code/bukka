@@ -7,8 +7,15 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="text-2xl font-bold text-green-600 whitespace-nowrap"
+          className="text-2xl md:hidden flex items-center font-bold text-green-600 whitespace-nowrap"
         >
+          <img className="w-[80px]" src={"/images/logo.png"} />
+        </Link>
+        <Link
+          href="/"
+          className="text-2xl hidden md:flex items-center font-bold text-green-600 whitespace-nowrap"
+        >
+          <img className="w-[80px]" src={"/images/logo.png"} />
           BukaOnline
         </Link>
 
@@ -31,7 +38,8 @@ export default function Navbar() {
         </div>
 
         {/* CTA Button */}
-        <Link href={"/login"}
+        <Link
+          href={"/login"}
           className="
           bg-green-600 
           hover:bg-green-700 

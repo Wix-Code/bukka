@@ -3,56 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
-
-type Plan = {
-  name: string;
-  description: string;
-  monthly: number;
-  yearly: number;
-  popular?: boolean;
-  features: string[];
-};
-
-const plans: Plan[] = [
-  {
-    name: "Starter",
-    description: "For new food businesses just getting online.",
-    monthly: 5000,
-    yearly: 4000,
-    features: [
-      "Digital menu with photos & prices",
-      "Shareable menu link + QR code",
-      "Up to 30 menu items",
-      "WhatsApp orders",
-    ],
-  },
-  {
-    name: "Growth",
-    description: "For businesses ready to take more orders.",
-    monthly: 12000,
-    yearly: 9600,
-    popular: true,
-    features: [
-      "Everything in Starter",
-      "Unlimited menu items",
-      "Order analytics & history",
-      "Custom menu domain",
-      "Priority WhatsApp support",
-    ],
-  },
-  {
-    name: "Business",
-    description: "For multi-location restaurants and chains.",
-    monthly: 25000,
-    yearly: 20000,
-    features: [
-      "Everything in Growth",
-      "Up to 5 outlets",
-      "Staff accounts & roles",
-      "Dedicated onboarding",
-    ],
-  },
-];
+import { PLAN_ORDER, PlanKey, PLANS } from "@/components/Plan";
 
 const faqs = [
   {
@@ -246,8 +197,8 @@ export default function Home() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mt-12 items-start">
-          {plans.map((plan) => (
-            <PlanCard key={plan.name} plan={plan} yearly={yearly} />
+          {PLAN_ORDER.map((key) => (
+            <PlanCard key={key} planKey={key} yearly={yearly} />
           ))}
         </div>
       </section>
@@ -325,7 +276,7 @@ export default function Home() {
             title="Product"
             links={[
               { label: "Pricing", href: "#pricing" },
-              { label: "Create my menu", href: "/signup" },
+              { label: "Create my menu", href: "/register" },
               { label: "Log in", href: "/login" },
             ]}
           />
@@ -393,7 +344,8 @@ function Step({
   );
 }
 
-function PlanCard({ plan, yearly }: { plan: Plan; yearly: boolean }) {
+function PlanCard({ planKey, yearly }: { planKey: PlanKey; yearly: boolean }) {
+  const plan = PLANS[planKey];
   const price = yearly ? plan.yearly : plan.monthly;
 
   return (
@@ -426,7 +378,7 @@ function PlanCard({ plan, yearly }: { plan: Plan; yearly: boolean }) {
       )}
 
       <Link
-        href={`/signup?plan=${plan.name.toLowerCase()}`}
+        href={`/register?plan=${planKey}`}
         className={`mt-6 text-center py-3 rounded-full font-medium transition ${
           plan.popular
             ? "bg-green-600 text-white hover:bg-green-700"
