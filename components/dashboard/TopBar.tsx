@@ -1,13 +1,32 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Notification } from "iconsax-react";
 import MobileNav from "./MobileNav";
 import { navItems } from "./NavItem";
+import NotificationBell from "./notifications/NotificationBell";
 
-export default function Topbar() {
+type Props = {
+  vendorName: string;
+  avatarUrl: string | null;
+  vendorId: string;
+};
+
+function getInitials(name: string) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+  return initials || "?";
+}
+
+export default function Topbar({ vendorName, avatarUrl, vendorId }: Props) {
   const pathname = usePathname();
   const current = navItems.find((item) => item.href === pathname);
+
+  console.log(vendorName, "vendor name")
 
   return (
     <header className="sticky top-0 z-10 bg-[#fffdf7]/80 backdrop-blur border-b border-gray-100">
@@ -20,17 +39,23 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
-            aria-label="Notifications"
-            className="relative p-2 rounded-full text-gray-500 hover:bg-gray-100 transition"
-          >
-            <Notification size={20} color="currentColor" variant="Linear" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-600" />
-          </button>
+          <NotificationBell vendorId={vendorId} />
 
-          <div className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold">
-            M
-          </div>
+          <Link
+            href="/dashboard/settings"
+            aria-label="Account settings"
+            className="w-9 h-9 rounded-full overflow-hidden bg-green-600 text-white flex items-center justify-center text-sm font-bold hover:opacity-90 transition"
+          >
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              getInitials(vendorName)
+            )}
+          </Link>
         </div>
       </div>
     </header>

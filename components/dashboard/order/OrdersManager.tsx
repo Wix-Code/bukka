@@ -67,7 +67,7 @@ export default function OrdersManager({
       )}
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {orders.length > 0 ? (
+        {orders.length === 0 ? (
           <div className="bg-white rounded-3xl">
             <EmptyState
               icon={<Dropbox size={28} color="#16A34A" />}

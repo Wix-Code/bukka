@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
 import SettingsForm from "@/components/dashboard/setting/SettingsForm";
 import { createSupabaseServerClient } from "@/lib/server";
+import { redirect } from "next/navigation";
 
 export default async function SettingsPage() {
   const supabase = await createSupabaseServerClient();
@@ -13,7 +13,9 @@ export default async function SettingsPage() {
 
   const { data: vendor } = await supabase
     .from("vendors")
-    .select("name, description, location, opening_hours, phone, cover_image")
+    .select(
+      "name, description, location, opening_hours, phone, cover_image, avatar_url",
+    )
     .eq("id", user.id)
     .single();
 
@@ -28,6 +30,7 @@ export default async function SettingsPage() {
           opening_hours: "",
           phone: "",
           cover_image: "",
+          avatar_url: "",
         }
       }
     />
