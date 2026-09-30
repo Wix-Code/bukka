@@ -59,6 +59,7 @@ export default async function AdminVendorsPage() {
                   <th className="px-6 py-3 font-medium">Name</th>
                   <th className="px-6 py-3 font-medium">Location</th>
                   <th className="px-6 py-3 font-medium">Plan</th>
+                  <th className="px-6 py-3 font-medium">Phone</th>
                   <th className="px-6 py-3 font-medium">Status</th>
                   <th className="px-6 py-3 font-medium">Joined</th>
                   <th className="px-6 py-3 font-medium">Menu</th>
@@ -75,6 +76,9 @@ export default async function AdminVendorsPage() {
                     </td>
                     <td className="px-6 py-4 text-gray-600 capitalize">
                       {vendor.plan}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 capitalize">
+                      {vendor.phone || "—"}
                     </td>
                     <td className="px-6 py-4">
                       <span
