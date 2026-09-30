@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/server";
 import Pagination from "@/components/reusuable/PaginationProps";
 
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();

@@ -34,12 +34,24 @@ export default function OrdersManager({
 }: {
   initialOrders: Order[];
 }) {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [error, setError] = useState<string | null>(null);
 
-  async function updateStatus(id: string, status: Order["status"]) {
+  async function updateStatus(
+    id: string,
+    status: Order["status"],
+  ) {
     const previous = orders;
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+
+    // Optimistic update
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id
+          ? { ...order, status }
+          : order,
+      ),
+    );
+
     setError(null);
 
     const { error } = await supabase
@@ -55,7 +67,10 @@ export default function OrdersManager({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Orders</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">
+        Orders
+      </h1>
+
       <p className="text-sm text-gray-500 mb-8">
         All orders placed through your menu.
       </p>
@@ -72,8 +87,7 @@ export default function OrdersManager({
             <EmptyState
               icon={<Dropbox size={28} color="#16A34A" />}
               title="No orders available"
-              description="No orders yet, they&rsquo;ll show up here once a customer orders
-          from your menu."
+              description="No orders yet, they'll show up here once a customer orders from your menu."
             />
           </div>
         ) : (
@@ -81,28 +95,47 @@ export default function OrdersManager({
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-500">
-                  <th className="px-6 py-3 font-medium">Order</th>
-                  <th className="px-6 py-3 font-medium">Item</th>
-                  <th className="px-6 py-3 font-medium">Amount</th>
-                  <th className="px-6 py-3 font-medium">Placed</th>
-                  <th className="px-6 py-3 font-medium">Status</th>
+                  <th className="px-6 py-3 font-medium">
+                    Order
+                  </th>
+
+                  <th className="px-6 py-3 font-medium">
+                    Item
+                  </th>
+
+                  <th className="px-6 py-3 font-medium">
+                    Amount
+                  </th>
+
+                  <th className="px-6 py-3 font-medium">
+                    Placed
+                  </th>
+
+                  <th className="px-6 py-3 font-medium">
+                    Status
+                  </th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-100">
                 {orders.map((order) => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 text-gray-400 font-mono text-xs">
                       #{order.id.slice(0, 8)}
                     </td>
+
                     <td className="px-6 py-4 text-gray-900 font-medium">
                       {order.item_name}
                     </td>
+
                     <td className="px-6 py-4 text-gray-900">
-                      ₦{order.item_price.toLocaleString()}
+                      ₦{Number(order.item_price).toLocaleString()}
                     </td>
+
                     <td className="px-6 py-4 text-gray-500">
                       {formatTime(order.created_at)}
                     </td>
+
                     <td className="px-6 py-4">
                       <select
                         value={order.status}
@@ -116,9 +149,17 @@ export default function OrdersManager({
                           statusStyles[order.status]
                         }`}
                       >
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="pending">
+                          Pending
+                        </option>
+
+                        <option value="completed">
+                          Completed
+                        </option>
+
+                        <option value="cancelled">
+                          Cancelled
+                        </option>
                       </select>
                     </td>
                   </tr>
