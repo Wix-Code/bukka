@@ -24,3 +24,4 @@ exception
   when duplicate_object then
     raise notice 'orders is already part of supabase_realtime — nothing to do.';
 end $$;
+
