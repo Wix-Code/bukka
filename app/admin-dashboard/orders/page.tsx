@@ -50,7 +50,7 @@ export default async function AdminOrdersPage() {
       )}
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {!orders || orders.length > 0 ? (
+        {!orders || orders.length === 0 ? (
           <div className="p-12 text-center text-gray-500">
             {error
               ? "Couldn't load orders — see the error above."

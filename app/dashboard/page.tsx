@@ -1,8 +1,15 @@
 import { redirect } from "next/navigation";
-import { Wallet2, Bag2, Book1, Clock, Dropbox } from "iconsax-react";
+import { Wallet2, Bag2, Book1, Clock, Dropbox, TickCircle, CloseCircle } from "iconsax-react";
 import MenuQRCard from "@/components/dashboard/MenuQrCode";
 import { createSupabaseServerClient } from "@/lib/server";
 import EmptyState from "@/components/reusuable/EmptyState";
+import Link from "next/link";
+
+const toneStyles: Record<string, string> = {
+  green: "bg-green-50 text-green-600",
+  yellow: "bg-yellow-50 text-yellow-600",
+  red: "bg-red-50 text-red-600",
+};
 
 const statusStyles: Record<string, string> = {
   pending: "bg-yellow-50 text-yellow-700",
@@ -60,30 +67,50 @@ export default async function DashboardOverview() {
   const revenueThisMonth = ordersThisMonth
     .filter((o) => o.status === "completed")
     .reduce((sum, o) => sum + Number(o.item_price), 0);
-  const pendingOrders = ordersThisMonth.filter(
-    (o) => o.status === "pending"
-  ).length;
+
+  const countByStatus = (status: string) =>
+    ordersThisMonth.filter((o) => o.status === status).length;
+
+  const pendingOrders = countByStatus("pending");
+  const completedOrders = countByStatus("completed");
+  const cancelledOrders = countByStatus("cancelled");
 
   const stats = [
     {
       label: "Revenue this month",
       value: `₦${revenueThisMonth.toLocaleString()}`,
       icon: Wallet2,
+      tone: "green",
     },
     {
       label: "Orders this month",
       value: ordersThisMonth.length.toString(),
       icon: Bag2,
+      tone: "green",
     },
     {
       label: "Menu items",
       value: (menuItemCount ?? 0).toString(),
       icon: Book1,
+      tone: "green",
     },
     {
       label: "Pending orders",
       value: pendingOrders.toString(),
       icon: Clock,
+      tone: "yellow",
+    },
+    {
+      label: "Completed orders",
+      value: completedOrders.toString(),
+      icon: TickCircle,
+      tone: "green",
+    },
+    {
+      label: "Cancelled orders",
+      value: cancelledOrders.toString(),
+      icon: CloseCircle,
+      tone: "red",
     },
   ];
 
@@ -93,7 +120,8 @@ export default async function DashboardOverview() {
         Here&rsquo;s how {vendor?.name ?? "your restaurant"} is doing today.
       </p>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* 6 cards divide evenly into 3 columns; 4 columns would leave 2 orphaned */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -101,7 +129,9 @@ export default async function DashboardOverview() {
               key={stat.label}
               className="bg-white rounded-2xl p-5 shadow-sm"
             >
-              <div className="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center ${toneStyles[stat.tone]}`}
+              >
                 <Icon size={20} color="currentColor" variant="Bold" />
               </div>
               <p className="mt-4 text-2xl font-bold text-gray-900">
@@ -116,19 +146,25 @@ export default async function DashboardOverview() {
       {vendor?.slug && <MenuQRCard slug={vendor.slug} />}
 
       <div className="bg-white rounded-2xl shadow-sm mt-8 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100">
+        <div className="px-6 flex items-center justify-between py-5 border-b border-gray-100">
           <h2 className="font-bold text-gray-900">Recent orders</h2>
+          <Link
+            className="text-sm text-green-700 hover:text-green-800 underline underline-offset-2"
+            href={"/dashboard/orders"}
+          >
+            View All
+          </Link>
         </div>
 
-        {!recentOrders || recentOrders.length > 0 ? (
-           <div className="bg-white rounded-3xl">
-              <EmptyState
-                icon={<Dropbox size={28} color="#16A34A" />}
-                title="No orders available"
-                description="No orders yet, they&rsquo;ll show up here once a customer orders
+        {!recentOrders || recentOrders.length === 0 ? (
+          <div className="bg-white rounded-3xl">
+            <EmptyState
+              icon={<Dropbox size={28} color="#16A34A" />}
+              title="No orders available"
+              description="No orders yet, they&rsquo;ll show up here once a customer orders
             from your menu."
-              />
-            </div>
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

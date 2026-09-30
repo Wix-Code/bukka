@@ -14,6 +14,7 @@ type VendorFields = {
   opening_hours: string;
   phone: string;
   cover_image: string;
+  avatar_url: string;
 };
 
 type Props = {
@@ -61,6 +62,14 @@ export default function SettingsForm({ vendorId, initialVendor }: Props) {
         onSubmit={handleSubmit}
         className="bg-white rounded-2xl shadow-sm p-6"
       >
+        <ImageUpload
+          label="Profile picture"
+          value={form.avatar_url}
+          onChange={(url) => setForm((f) => ({ ...f, avatar_url: url }))}
+          pathPrefix={`${vendorId}/avatar`}
+          hint="Shown in the dashboard header."
+        />
+
         <Input
           label="Restaurant name"
           value={form.name}

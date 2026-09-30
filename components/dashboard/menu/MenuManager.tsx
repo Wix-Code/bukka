@@ -193,7 +193,7 @@ export default function MenuManager({ vendorId, initialDishes }: Props) {
                   <button
                     type="button"
                     onClick={() => openEditDialog(dish)}
-                    className="flex-1 flex items-center justify-center gap-1.5 border border-gray-200 rounded-full py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition"
+                    className="flex-1 flex items-center justify-center gap-1.5 border border-gray-200 rounded-full py-2 text-sm font-medium cursor-pointer text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition"
                   >
                     <Edit2 size={16} color="currentColor" />
                     Edit
@@ -203,7 +203,7 @@ export default function MenuManager({ vendorId, initialDishes }: Props) {
                     type="button"
                     onClick={() => setDeletingDish(dish)}
                     aria-label={`Remove ${dish.name}`}
-                    className="w-9 h-9 flex items-center justify-center rounded-full text-red-500 hover:bg-red-50 transition"
+                    className="w-9 h-9 flex cursor-pointer items-center justify-center rounded-full text-red-500 hover:bg-red-50 transition"
                   >
                     <Trash size={16} color="currentColor" />
                   </button>

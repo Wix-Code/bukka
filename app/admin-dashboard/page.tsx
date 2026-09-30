@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { Shop, Bag2, Wallet2, Chart2 } from "iconsax-react";
+import Link from "next/link";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-NG", {
@@ -108,8 +109,14 @@ export default async function AdminOverview() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm mt-8 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100">
+        <div className="px-6 py-5 flex items-center justify-between border-b border-gray-100">
           <h2 className="font-bold text-gray-900">Newest vendors</h2>
+          <Link
+            className="text-sm text-green-700 hover:text-green-800 underline underline-offset-2"
+            href={"/admin-dashboard/vendors"}
+          >
+            View All
+          </Link>
         </div>
 
         {!recentVendors || recentVendors.length === 0 ? (
