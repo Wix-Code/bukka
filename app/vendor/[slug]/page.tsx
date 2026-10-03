@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import VendorHeader from "@/components/vendor/VendorHeader";
-import { getVendorBySlug, getVendorMenu } from "@/lib/vendors";
+import { getVendorBySlug, getVendorMenu, recordPageView } from "@/lib/vendors";
 import MenuSection from "@/components/reusuable/MenuSection";
 import Pagination from "@/components/reusuable/PaginationProps";
+import { after } from "next/server";
 
 const FALLBACK_COVER_IMAGE =
   "https://images.unsplash.com/photo-1600891964092-4316c288032e";
@@ -44,6 +45,7 @@ export default async function VendorPage({ params, searchParams }: Props) {
   }
 
   const allDishes = await getVendorMenu(vendor.id);
+  after(() => recordPageView(vendor.id));
 
   const totalPages = Math.max(1, Math.ceil(allDishes.length / PAGE_SIZE));
 
@@ -71,15 +73,13 @@ export default async function VendorPage({ params, searchParams }: Props) {
         vendorId={vendor.id}
       />
 
-      {dishes.length > 0 && (
-        <div className="mx-auto max-w-7xl px-6 pb-10">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            createPageHref={(page) => `/${slug}?page=${page}`}
-          />
-        </div>
-      )}
+      <div className="mx-auto max-w-7xl px-6 pb-10">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          createPageHref={(page) => `/vendor/${slug}?page=${page}`}
+        />
+      </div>
 
       <footer className="pb-10 text-center">
         <p className="text-xs text-gray-400">Powered by Bukka</p>
