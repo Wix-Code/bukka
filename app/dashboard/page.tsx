@@ -1,5 +1,14 @@
 import { redirect } from "next/navigation";
-import { Wallet2, Bag2, Book1, Clock, Dropbox, TickCircle, CloseCircle } from "iconsax-react";
+import {
+  Wallet2,
+  Bag2,
+  Book1,
+  Clock,
+  Dropbox,
+  TickCircle,
+  CloseCircle,
+  Eye,
+} from "iconsax-react";
 import MenuQRCard from "@/components/dashboard/MenuQrCode";
 import { createSupabaseServerClient } from "@/lib/server";
 import EmptyState from "@/components/reusuable/EmptyState";
@@ -43,6 +52,7 @@ export default async function DashboardOverview() {
     { data: vendor },
     { data: monthOrders },
     { count: menuItemCount },
+    { count: viewCount },
     { data: recentOrders },
   ] = await Promise.all([
     supabase.from("vendors").select("name, slug").eq("id", user.id).single(),
@@ -55,6 +65,11 @@ export default async function DashboardOverview() {
       .from("menu_items")
       .select("id", { count: "exact", head: true })
       .eq("vendor_id", user.id),
+    supabase
+      .from("page_views")
+      .select("id", { count: "exact", head: true })
+      .eq("vendor_id", user.id)
+      .gte("created_at", startOfMonth.toISOString()),
     supabase
       .from("orders")
       .select("id, item_name, item_price, status, created_at")
@@ -112,6 +127,12 @@ export default async function DashboardOverview() {
       icon: CloseCircle,
       tone: "red",
     },
+    {
+      label: "Menu views this month",
+      value: (viewCount ?? 0).toString(),
+      icon: Eye,
+      tone: "green",
+    },
   ];
 
   return (
@@ -120,8 +141,10 @@ export default async function DashboardOverview() {
         Here&rsquo;s how {vendor?.name ?? "your restaurant"} is doing today.
       </p>
 
-      {/* 6 cards divide evenly into 3 columns; 4 columns would leave 2 orphaned */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* 7 cards: 4 columns gives a 4-then-3 layout, which reads far more
+          balanced than 3 columns would (3-then-3-then-1, an orphaned card
+          alone on its own row). */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -157,14 +180,11 @@ export default async function DashboardOverview() {
         </div>
 
         {!recentOrders || recentOrders.length === 0 ? (
-          <div className="bg-white rounded-3xl">
-            <EmptyState
-              icon={<Dropbox size={28} color="#16A34A" />}
-              title="No orders available"
-              description="No orders yet, they&rsquo;ll show up here once a customer orders
-            from your menu."
-            />
-          </div>
+          <EmptyState
+            icon={<Dropbox size={28} color="#16A34A" />}
+            title="No orders available"
+            description="No orders yet — they'll show up here once a customer orders from your menu."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

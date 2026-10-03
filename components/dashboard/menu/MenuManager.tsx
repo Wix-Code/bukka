@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Add, Dropbox, Edit2, Trash } from "iconsax-react";
+import { useMemo, useState } from "react";
+import { Add, Dropbox, Edit2, Trash, SearchNormal1 } from "iconsax-react";
 import { supabase } from "@/lib/supabase";
 
 import DishFormDialog, {
@@ -22,6 +22,21 @@ export default function MenuManager({ vendorId, initialDishes }: Props) {
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [deletingDish, setDeletingDish] = useState<Dish | null>(null);
   const [pageError, setPageError] = useState<string | null>(null);
+
+  const [query, setQuery] = useState("");
+
+  const filteredDishes = useMemo(() => {
+    const search = query.trim().toLowerCase();
+
+    if (!search) return dishes;
+
+    return dishes.filter((dish) => {
+      return (
+        dish.name.toLowerCase().includes(search) ||
+        dish.description?.toLowerCase().includes(search)
+      );
+    });
+  }, [dishes, query]);
 
   function openAddDialog() {
     setEditingDish(null);
@@ -121,6 +136,25 @@ export default function MenuManager({ vendorId, initialDishes }: Props) {
         </button>
       </div>
 
+      {/* Search */}
+      {dishes.length > 0 && (
+        <div className="relative max-w-sm mb-8">
+          <SearchNormal1
+            size={17}
+            color="currentColor"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search your menu"
+            className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 bg-white text-sm text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition"
+          />
+        </div>
+      )}
+
       {/* Error */}
       {pageError && (
         <div className="mb-6 rounded-2xl bg-red-50 text-red-700 text-sm px-4 py-3">
@@ -141,10 +175,18 @@ export default function MenuManager({ vendorId, initialDishes }: Props) {
             }}
           />
         </div>
+      ) : filteredDishes.length === 0 ? (
+        <div className="bg-white rounded-3xl py-10">
+          <EmptyState
+            icon={<SearchNormal1 size={28} color="#16A34A" />}
+            title="No dishes found"
+            description="Try another search term."
+          />
+        </div>
       ) : (
         /* DISHES */
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dishes.map((dish) => (
+          {filteredDishes.map((dish) => (
             <div
               key={dish.id}
               className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100"
