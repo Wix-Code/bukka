@@ -10,13 +10,21 @@ import DishFormDialog, {
 
 import DeleteDishDialog from "@/components/dashboard/menu/DeleteDishDialog";
 import EmptyState from "@/components/reusuable/EmptyState";
+import TrialBanner from "@/components/reusuable/TrialBanner";
 
 type Props = {
   vendorId: string;
   initialDishes: Dish[];
+  planStatus: string;
+  trialEndsAt: string | null;
 };
 
-export default function MenuManager({ vendorId, initialDishes }: Props) {
+export default function MenuManager({
+  vendorId,
+  initialDishes,
+  planStatus,
+  trialEndsAt,
+}: Props) {
   const [dishes, setDishes] = useState<Dish[]>(initialDishes);
   const [formOpen, setFormOpen] = useState(false);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
@@ -135,6 +143,8 @@ export default function MenuManager({ vendorId, initialDishes }: Props) {
           Add dish
         </button>
       </div>
+
+      <TrialBanner planStatus={planStatus} trialEndsAt={trialEndsAt} />
 
       {/* Search */}
       {dishes.length > 0 && (

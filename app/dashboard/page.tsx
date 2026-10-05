@@ -12,6 +12,7 @@ import {
 import MenuQRCard from "@/components/dashboard/MenuQrCode";
 import { createSupabaseServerClient } from "@/lib/server";
 import EmptyState from "@/components/reusuable/EmptyState";
+import TrialBanner from "@/components/reusuable/TrialBanner";
 import Link from "next/link";
 
 const toneStyles: Record<string, string> = {
@@ -55,7 +56,11 @@ export default async function DashboardOverview() {
     { count: viewCount },
     { data: recentOrders },
   ] = await Promise.all([
-    supabase.from("vendors").select("name, slug").eq("id", user.id).single(),
+    supabase
+      .from("vendors")
+      .select("name, slug, plan_status, trial_ends_at")
+      .eq("id", user.id)
+      .single(),
     supabase
       .from("orders")
       .select("item_price, status")
@@ -137,9 +142,14 @@ export default async function DashboardOverview() {
 
   return (
     <div>
-      <p className="text-gray-500 mb-8">
+      <p className="text-gray-500 mb-6">
         Here&rsquo;s how {vendor?.name ?? "your restaurant"} is doing today.
       </p>
+
+      <TrialBanner
+        planStatus={vendor?.plan_status ?? "inactive"}
+        trialEndsAt={vendor?.trial_ends_at ?? null}
+      />
 
       {/* 7 cards: 4 columns gives a 4-then-3 layout, which reads far more
           balanced than 3 columns would (3-then-3-then-1, an orphaned card

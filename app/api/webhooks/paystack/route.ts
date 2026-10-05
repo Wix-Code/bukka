@@ -1,115 +1,26 @@
-// import { NextResponse } from "next/server";
-// import { verifyPaystackSignature } from "@/lib/paystack";
-// import { createSupabaseAdminClient } from "@/lib/admin";
-// import { PlanKey } from "@/components/Plan";
-
-// export async function POST(request: Request) {
-//   const rawBody = await request.text();
-//   const signature = request.headers.get("x-paystack-signature");
-
-//   if (!verifyPaystackSignature(rawBody, signature)) {
-//     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
-//   }
-
-//   const event = JSON.parse(rawBody);
-//   const supabase = createSupabaseAdminClient();
-
-//   switch (event.event) {
-//     // The first payment on a new plan — this is what actually turns the
-//     // plan on. Recurring renewal charges land here too.
-//     case "charge.success": {
-//       const data = event.data;
-//       const vendorId: string | undefined = data.metadata?.vendor_id;
-//       const planKey: PlanKey | undefined = data.metadata?.plan_key;
-
-//       // Renewal charges after the first one won't carry our metadata —
-//       // match those by the stored customer code instead.
-//       const vendorFilter = vendorId
-//         ? { column: "id", value: vendorId }
-//         : {
-//             column: "paystack_customer_code",
-//             value: data.customer.customer_code,
-//           };
-
-//       await supabase.from("invoices").upsert(
-//         {
-//           id: data.reference,
-//           vendor_id:
-//             vendorId ??
-//             (
-//               await supabase
-//                 .from("vendors")
-//                 .select("id")
-//                 .eq(vendorFilter.column, vendorFilter.value)
-//                 .single()
-//             ).data?.id,
-//           amount: data.amount / 100,
-//           status: "paid",
-//           paid_at: data.paid_at ?? new Date().toISOString(),
-//         },
-//         { onConflict: "id" },
-//       );
-
-//       const update: Record<string, unknown> = {
-//         plan_status: "active",
-//         paystack_customer_code: data.customer.customer_code,
-//       };
-//       if (planKey) update.plan = planKey;
-
-//       await supabase
-//         .from("vendors")
-//         .update(update)
-//         .eq(vendorFilter.column, vendorFilter.value);
-
-//       break;
-//     }
-
-//     // Paystack finished setting up the recurring subscription — this is
-//     // where we learn the subscription_code and next renewal date.
-//     case "subscription.create": {
-//       const data = event.data;
-//       await supabase
-//         .from("vendors")
-//         .update({
-//           paystack_subscription_code: data.subscription_code,
-//           plan_renews_at: data.next_payment_date,
-//         })
-//         .eq("paystack_customer_code", data.customer.customer_code);
-//       break;
-//     }
-
-//     case "subscription.disable":
-//     case "subscription.not_renew": {
-//       const data = event.data;
-//       await supabase
-//         .from("vendors")
-//         .update({ plan_status: "cancelled" })
-//         .eq("paystack_subscription_code", data.subscription_code);
-//       break;
-//     }
-
-//     case "invoice.payment_failed": {
-//       const data = event.data;
-//       await supabase
-//         .from("vendors")
-//         .update({ plan_status: "past_due" })
-//         .eq("paystack_customer_code", data.customer.customer_code);
-//       break;
-//     }
-
-//     default:
-//       break;
-//   }
-
-//   // Paystack retries on anything other than a 2xx, so always acknowledge
-//   // once we've handled (or deliberately ignored) the event.
-//   return NextResponse.json({ received: true });
-// }
-
 import { NextResponse } from "next/server";
 import { verifyPaystackSignature } from "@/lib/paystack";
 import { createSupabaseAdminClient } from "@/lib/admin";
 import { PlanKey } from "@/components/Plan";
+
+function addOneMonth(date: Date) {
+  const result = new Date(date);
+
+  const originalDay = result.getUTCDate();
+
+  // Move to first day to avoid month overflow issues
+  result.setUTCDate(1);
+  result.setUTCMonth(result.getUTCMonth() + 1);
+
+  // Get last day of target month
+  const lastDayOfTargetMonth = new Date(
+    Date.UTC(result.getUTCFullYear(), result.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+
+  result.setUTCDate(Math.min(originalDay, lastDayOfTargetMonth));
+
+  return result;
+}
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -117,25 +28,47 @@ export async function POST(request: Request) {
 
   if (!verifyPaystackSignature(rawBody, signature)) {
     console.error("Paystack webhook: signature verification failed.");
-    return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+
+    return NextResponse.json(
+      {
+        error: "Invalid signature.",
+      },
+      {
+        status: 401,
+      },
+    );
   }
 
   const event = JSON.parse(rawBody);
+
+  console.log("Paystack webhook event:", event.event);
+
   const supabase = createSupabaseAdminClient();
+
   let hadError = false;
 
   switch (event.event) {
-    // The first payment on a new plan — this is what actually turns the
-    // plan on. Recurring renewal charges land here too.
+    /*
+     * Successful initial payment and successful
+     * recurring subscription payments.
+     */
     case "charge.success": {
       const data = event.data;
+
       const metadataVendorId: string | undefined = data.metadata?.vendor_id;
+
       const planKey: PlanKey | undefined = data.metadata?.plan_key;
 
       let vendorId = metadataVendorId;
 
-      // Renewal charges after the very first one won't carry our metadata —
-      // match those by the customer code we stored on the first payment.
+      /*
+       * Recurring subscription charges may not
+       * include the metadata from the original
+       * transaction.
+       *
+       * In that situation find the vendor by
+       * Paystack customer code.
+       */
       if (!vendorId) {
         const { data: match, error: lookupError } = await supabase
           .from("vendors")
@@ -148,8 +81,10 @@ export async function POST(request: Request) {
             "Paystack webhook: couldn't find vendor by customer_code:",
             lookupError.message,
           );
+
           hadError = true;
         }
+
         vendorId = match?.id;
       }
 
@@ -158,19 +93,48 @@ export async function POST(request: Request) {
           "Paystack webhook: no vendor resolved for charge",
           data.reference,
         );
+
         hadError = true;
         break;
       }
 
+      /*
+       * Use Paystack's actual successful payment
+       * time as the beginning of the paid period.
+       */
+      const paidAt = new Date(
+        data.paid_at ?? data.paidAt ?? new Date().toISOString(),
+      );
+
+      /*
+       * Monthly subscription:
+       * next renewal = one calendar month after
+       * successful payment.
+       */
+      const renewsAt = addOneMonth(paidAt);
+
+      console.log("Payment date:", paidAt.toISOString());
+
+      console.log("Calculated renewal date:", renewsAt.toISOString());
+
+      /*
+       * Store payment invoice.
+       */
       const { error: invoiceError } = await supabase.from("invoices").upsert(
         {
           id: data.reference,
+
           vendor_id: vendorId,
+
           amount: data.amount / 100,
+
           status: "paid",
-          paid_at: data.paid_at ?? new Date().toISOString(),
+
+          paid_at: paidAt.toISOString(),
         },
-        { onConflict: "id" },
+        {
+          onConflict: "id",
+        },
       );
 
       if (invoiceError) {
@@ -178,14 +142,25 @@ export async function POST(request: Request) {
           "Paystack webhook: invoice upsert failed:",
           invoiceError.message,
         );
+
         hadError = true;
       }
 
+      /*
+       * Activate the plan and establish the
+       * new paid-through date.
+       */
       const update: Record<string, unknown> = {
         plan_status: "active",
+
         paystack_customer_code: data.customer.customer_code,
+
+        plan_renews_at: renewsAt.toISOString(),
       };
-      if (planKey) update.plan = planKey;
+
+      if (planKey) {
+        update.plan = planKey;
+      }
 
       const { error: vendorUpdateError } = await supabase
         .from("vendors")
@@ -197,40 +172,100 @@ export async function POST(request: Request) {
           "Paystack webhook: vendor plan update failed:",
           vendorUpdateError.message,
         );
+
         hadError = true;
       }
 
       break;
     }
 
-    // Paystack finished setting up the recurring subscription — this is
-    // where we learn the subscription_code and next renewal date.
+    /*
+     * Subscription creation.
+     *
+     * Store the subscription code, but don't
+     * overwrite plan_renews_at with an earlier
+     * Paystack date.
+     */
     case "subscription.create": {
       const data = event.data;
+
+      console.log("Paystack subscription created:", {
+        subscription_code: data.subscription_code,
+
+        next_payment_date: data.next_payment_date,
+
+        customer_code: data.customer?.customer_code,
+      });
+
+      const customerCode = data.customer?.customer_code;
+
+      if (!customerCode) {
+        console.error(
+          "Paystack webhook: subscription.create has no customer code.",
+        );
+
+        hadError = true;
+        break;
+      }
+
+      /*
+       * Get the vendor's existing renewal date.
+       */
+      const { data: vendor, error: lookupError } = await supabase
+        .from("vendors")
+        .select("id, plan_renews_at")
+        .eq("paystack_customer_code", customerCode)
+        .single();
+
+      if (lookupError || !vendor) {
+        console.error(
+          "Paystack webhook: couldn't resolve vendor during subscription.create:",
+          lookupError?.message,
+        );
+
+        hadError = true;
+        break;
+      }
+
+      const update: Record<string, unknown> = {
+        paystack_subscription_code: data.subscription_code,
+      };
+
+      /*
+       * Only use Paystack's next_payment_date
+       * if we do not already have a paid-through
+       * date.
+       */
+      if (!vendor.plan_renews_at && data.next_payment_date) {
+        update.plan_renews_at = data.next_payment_date;
+      }
+
       const { error } = await supabase
         .from("vendors")
-        .update({
-          paystack_subscription_code: data.subscription_code,
-          plan_renews_at: data.next_payment_date,
-        })
-        .eq("paystack_customer_code", data.customer.customer_code);
+        .update(update)
+        .eq("id", vendor.id);
 
       if (error) {
         console.error(
           "Paystack webhook: subscription.create update failed:",
           error.message,
         );
+
         hadError = true;
       }
+
       break;
     }
 
     case "subscription.disable":
     case "subscription.not_renew": {
       const data = event.data;
+
       const { error } = await supabase
         .from("vendors")
-        .update({ plan_status: "cancelled" })
+        .update({
+          plan_status: "cancelled",
+        })
         .eq("paystack_subscription_code", data.subscription_code);
 
       if (error) {
@@ -238,16 +273,21 @@ export async function POST(request: Request) {
           "Paystack webhook: subscription cancel update failed:",
           error.message,
         );
+
         hadError = true;
       }
+
       break;
     }
 
     case "invoice.payment_failed": {
       const data = event.data;
+
       const { error } = await supabase
         .from("vendors")
-        .update({ plan_status: "past_due" })
+        .update({
+          plan_status: "past_due",
+        })
         .eq("paystack_customer_code", data.customer.customer_code);
 
       if (error) {
@@ -255,25 +295,32 @@ export async function POST(request: Request) {
           "Paystack webhook: payment_failed update failed:",
           error.message,
         );
+
         hadError = true;
       }
+
       break;
     }
 
     default:
       console.log("Paystack webhook: unhandled event type:", event.event);
+
       break;
   }
 
-  // A non-2xx response tells Paystack to retry delivery later. Worth doing
-  // when our own database write failed — the payment itself still went
-  // through and shouldn't be silently lost because our side had a bug.
   if (hadError) {
     return NextResponse.json(
-      { received: true, error: "Processing error — see server logs." },
-      { status: 500 },
+      {
+        received: true,
+        error: "Processing error — see server logs.",
+      },
+      {
+        status: 500,
+      },
     );
   }
 
-  return NextResponse.json({ received: true });
+  return NextResponse.json({
+    received: true,
+  });
 }
