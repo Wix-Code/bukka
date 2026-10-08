@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import MenuManager from "@/components/dashboard/menu/MenuManager";
 import type { Dish } from "@/components/dashboard/menu/DishFormDialog";
 import Pagination from "@/components/reusuable/PaginationProps";
-import { createSupabaseServerClient } from "@/lib/server";
 import TrialBanner from "@/components/reusuable/TrialBanner";
+
+import { createSupabaseServerClient } from "@/lib/server";
 
 const PAGE_SIZE = 10;
 
@@ -22,7 +24,6 @@ export default async function MenuPage({
 
   const supabase = await createSupabaseServerClient();
 
-  // 1. Check authentication
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -31,16 +32,42 @@ export default async function MenuPage({
     redirect("/login");
   }
 
-  // 2. Fetch vendor subscription / plan status first
   const { data: vendor, error: vendorError } = await supabase
     .from("vendors")
-    .select("id, plan, plan_status, trial_ends_at")
+    .select(
+      `
+      id,
+      plan_status,
+      trial_ends_at,
+      subscription_ends_at,
+      billing_period
+    `,
+    )
     .eq("id", user.id)
     .single();
 
-  if (vendorError || !vendor) {
-    console.error("Vendor fetch failed:", vendorError?.message);
-    redirect("/dashboard");
+  /*
+   * During development, SHOW the actual Supabase error.
+   * Do not silently redirect.
+   */
+  if (vendorError) {
+    return (
+      <div className="rounded-2xl bg-red-50 p-6 text-red-700">
+        <p className="font-semibold">
+          Could not load subscription information.
+        </p>
+
+        <p className="mt-2 text-sm">{vendorError.message}</p>
+      </div>
+    );
+  }
+
+  if (!vendor) {
+    return (
+      <div className="rounded-2xl bg-red-50 p-6 text-red-700">
+        Vendor record could not be found.
+      </div>
+    );
   }
 
   const now = new Date();
@@ -49,14 +76,26 @@ export default async function MenuPage({
     ? new Date(vendor.trial_ends_at)
     : null;
 
+  const subscriptionEndsAt = vendor.subscription_ends_at
+    ? new Date(vendor.subscription_ends_at)
+    : null;
+
+  // Trial is active whenever trial_ends_at is still in the future
   const trialIsActive =
-    vendor.plan_status === "trial" && trialEndsAt !== null && trialEndsAt > now;
+    trialEndsAt !== null &&
+    trialEndsAt > now &&
+    vendor.plan_status !== "cancelled";
 
-  const subscriptionIsActive = vendor.plan_status === "active";
+  // Paid subscription
+  const subscriptionIsActive =
+    vendor.plan_status === "active" &&
+    (subscriptionEndsAt === null || subscriptionEndsAt > now);
 
-  const hasMenuAccess = subscriptionIsActive || trialIsActive;
+  const hasMenuAccess = trialIsActive || subscriptionIsActive;
 
-  // 3. Stop access before querying menu items
+  /*
+   * No trial/subscription access
+   */
   if (!hasMenuAccess) {
     return (
       <div>
@@ -65,21 +104,29 @@ export default async function MenuPage({
           trialEndsAt={vendor.trial_ends_at ?? null}
         />
 
-        <div className="mt-6 rounded-2xl bg-white p-8 shadow-sm text-center">
-          <h2 className="text-lg font-bold text-gray-900">
-            Menu management unavailable
-          </h2>
+        <div className="mt-6 rounded-2xl bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto max-w-md">
+            <h2 className="text-xl font-bold text-gray-900">
+              Your subscription has expired
+            </h2>
 
-          <p className="mt-2 text-sm text-gray-500">
-            Your subscription is currently inactive. Activate a plan to add or
-            manage menu items.
-          </p>
+            <p className="mt-3 text-sm leading-6 text-gray-500">
+              Renew your Bukka subscription to continue creating and managing
+              your menu.
+            </p>
+
+            <Link
+              href="/dashboard/billing"
+              className="mt-6 inline-flex rounded-full bg-green-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-green-700"
+            >
+              Renew subscription
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  // 4. Only load menu items when vendor has access
   const {
     data: dishes,
     count,
@@ -90,7 +137,9 @@ export default async function MenuPage({
       count: "exact",
     })
     .eq("vendor_id", user.id)
-    .order("created_at", { ascending: false })
+    .order("created_at", {
+      ascending: false,
+    })
     .range(from, to);
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));

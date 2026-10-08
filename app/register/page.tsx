@@ -56,7 +56,7 @@ export default function Signup() {
 
     // If email confirmations are off, Supabase returns a session immediately.
     if (data.session) {
-      router.push("/dashboard");
+      router.push("/login");
       return;
     }
 

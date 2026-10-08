@@ -144,7 +144,7 @@ export default function MenuManager({
         </button>
       </div>
 
-      <TrialBanner planStatus={planStatus} trialEndsAt={trialEndsAt} />
+      {/* <TrialBanner planStatus={planStatus} trialEndsAt={trialEndsAt} /> */}
 
       {/* Search */}
       {dishes.length > 0 && (
