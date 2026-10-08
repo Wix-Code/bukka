@@ -5,7 +5,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import EmptyState from "@/components/reusuable/EmptyState";
 
-import { Dropbox } from "iconsax-react";
+import {
+  Bag2,
+  Box,
+  CloseCircle,
+  Dropbox,
+  MoneyRecive,
+  TickCircle,
+} from "iconsax-react";
 
 import { Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 
@@ -24,6 +31,14 @@ const statusStyles: Record<Order["status"], string> = {
   pending: "bg-yellow-50 text-yellow-700",
   completed: "bg-green-50 text-green-700",
   cancelled: "bg-red-50 text-red-700",
+};
+
+const toneStyles: Record<string, string> = {
+  blue: "bg-blue-50 text-blue-600",
+  yellow: "bg-yellow-50 text-yellow-600",
+  green: "bg-green-50 text-green-600",
+  red: "bg-red-50 text-red-600",
+  purple: "bg-purple-50 text-purple-600",
 };
 
 const statusOptions: {
@@ -105,6 +120,71 @@ export default function OrdersManager({
     };
   }, []);
 
+  /*
+  |--------------------------------------------------------------------------
+  | ORDER STATS
+  |--------------------------------------------------------------------------
+  */
+
+  const stats = useMemo(() => {
+    const totalOrders = orders.length;
+
+    const pendingOrders = orders.filter(
+      (order) => order.status === "pending",
+    ).length;
+
+    const completedOrders = orders.filter(
+      (order) => order.status === "completed",
+    ).length;
+
+    const cancelledOrders = orders.filter(
+      (order) => order.status === "cancelled",
+    ).length;
+
+    const totalRevenue = orders
+      .filter((order) => order.status === "completed")
+      .reduce((total, order) => total + Number(order.item_price || 0), 0);
+
+    return [
+      {
+        label: "Total Orders",
+        value: totalOrders,
+        icon: Bag2,
+        tone: "blue",
+      },
+      {
+        label: "Pending Orders",
+        value: pendingOrders,
+        icon: Box,
+        tone: "yellow",
+      },
+      {
+        label: "Completed Orders",
+        value: completedOrders,
+        icon: TickCircle,
+        tone: "green",
+      },
+      {
+        label: "Cancelled Orders",
+        value: cancelledOrders,
+        icon: CloseCircle,
+        tone: "red",
+      },
+      {
+        label: "Total Revenue",
+        value: `₦${totalRevenue.toLocaleString()}`,
+        icon: MoneyRecive,
+        tone: "purple",
+      },
+    ];
+  }, [orders]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | FILTERED ORDERS
+  |--------------------------------------------------------------------------
+  */
+
   const filteredOrders = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -121,6 +201,12 @@ export default function OrdersManager({
       return matchesStatus && matchesSearch;
     });
   }, [orders, query, statusFilter]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | UPDATE ORDER STATUS
+  |--------------------------------------------------------------------------
+  */
 
   async function updateStatus(id: string, status: Order["status"]) {
     const previous = orders;
@@ -167,6 +253,36 @@ export default function OrdersManager({
         </div>
       )}
 
+      {/* Order Stats */}
+      {orders.length > 0 && (
+        <div className="mb-8 grid gap-5 sm:grid-cols-1 lg:grid-cols-3">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+
+            return (
+              <div
+                key={stat.label}
+                className="rounded-2xl bg-white p-5 shadow-sm"
+              >
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                    toneStyles[stat.tone]
+                  }`}
+                >
+                  <Icon size={20} color="currentColor" variant="Bold" />
+                </div>
+
+                <p className="mt-4 text-2xl font-bold text-gray-900">
+                  {stat.value}
+                </p>
+
+                <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Search + Filter */}
       {orders.length > 0 && (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -186,7 +302,7 @@ export default function OrdersManager({
             />
           </div>
 
-          {/* Custom dropdown */}
+          {/* Status Filter */}
           <div ref={dropdownRef} className="relative w-full sm:w-[220px]">
             <button
               type="button"
@@ -217,7 +333,7 @@ export default function OrdersManager({
               />
             </button>
 
-            {/* Dropdown menu */}
+            {/* Dropdown Menu */}
             {statusOpen && (
               <div
                 role="listbox"
@@ -259,7 +375,7 @@ export default function OrdersManager({
         </div>
       )}
 
-      {/* Orders table */}
+      {/* Orders Table */}
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
         {orders.length === 0 ? (
           <div className="rounded-3xl bg-white">
@@ -347,7 +463,7 @@ export default function OrdersManager({
         )}
       </div>
 
-      {/* Results count */}
+      {/* Results Count */}
       {orders.length > 0 && (
         <p className="mt-4 text-xs text-gray-400">
           Showing {filteredOrders.length} of {orders.length} orders on this page

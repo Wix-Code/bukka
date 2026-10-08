@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,48 +20,73 @@ import {
   TrendingUp,
   UtensilsCrossed,
 } from "lucide-react";
+
 import { AnimatePresence, motion } from "framer-motion";
 
 import Navbar from "@/components/layout/Navbar";
-import { PLAN_ORDER, PlanKey, PLANS } from "@/components/Plan";
-import Image from "next/image";
+
+import {
+  PLAN_ORDER,
+  BillingPeriod,
+  SUBSCRIPTION_FEATURES,
+  SUBSCRIPTION_PLANS,
+} from "@/components/Plan";
+
+/* -------------------------------------------------------------------------- */
+/* FAQ                                                                         */
+/* -------------------------------------------------------------------------- */
 
 const faqs = [
   {
     q: "Do I need a website or app already?",
-    a: "No. Bukka gives you a digital menu and ordering page out of the box. Just share the link or print the QR code.",
+    a: "No. Bukka gives you a digital menu and ordering page out of the box. Just create your menu and share your link or QR code.",
   },
   {
     q: "How do orders reach me?",
-    a: "Customers place an order on your menu page and it lands straight in your WhatsApp, ready to confirm.",
-  },
-  {
-    q: "Can I change plans later?",
-    a: "Yes. Upgrade or downgrade anytime from your dashboard. Changes apply from your next billing date.",
+    a: "Customers browse your digital menu, place their order and can continue the conversation directly through WhatsApp.",
   },
   {
     q: "Is there a free trial?",
-    a: "Every plan starts with a 14-day free trial. No card is required to get your menu online.",
+    a: "Yes. Every new Bukka account starts with a 14-day free trial. No card is required to get your menu online.",
   },
   {
-    q: "Can I cancel anytime?",
-    a: "Yes. There's no lock-in contract. Cancel from your account settings whenever you like.",
+    q: "What happens after my 14-day free trial?",
+    a: "Choose monthly, 6-month or annual billing to continue managing your menu and using Bukka.",
+  },
+  {
+    q: "Do all subscriptions have the same features?",
+    a: "Yes. Every paid Bukka subscription includes the same product features. The only difference is the billing period you choose.",
+  },
+  {
+    q: "What happens if my subscription expires?",
+    a: "Your account and existing business information remain stored, but subscription-only management features are restricted until you renew.",
+  },
+  {
+    q: "Can I change my billing period?",
+    a: "Yes. You can choose a different billing period when renewing your subscription.",
   },
 ];
 
 const easing = [0.22, 1, 0.36, 1] as const;
 
+/* -------------------------------------------------------------------------- */
+/* PAGE                                                                         */
+/* -------------------------------------------------------------------------- */
+
 export default function Home() {
-  const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
     <main className="min-h-screen bg-[#fffdf7]">
       <Navbar />
 
-      {/* HERO */}
+      {/* ==================================================================== */}
+      {/* HERO                                                                 */}
+      {/* ==================================================================== */}
+
       <section className="relative overflow-hidden">
-        {/* Background decoration */}
+        {/* Background decorations */}
+
         <motion.div
           className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-green-200/40 blur-3xl"
           animate={{
@@ -89,17 +116,30 @@ export default function Home() {
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 pb-28 pt-20 md:grid-cols-2 lg:pt-28">
           {/* LEFT */}
+
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{
+              opacity: 0,
+              x: -50,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
             transition={{
               duration: 0.8,
               ease: easing,
             }}
           >
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{
+                opacity: 0,
+                y: 15,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
               transition={{
                 delay: 0.15,
                 duration: 0.6,
@@ -114,8 +154,14 @@ export default function Home() {
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{
+                opacity: 0,
+                y: 25,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
               transition={{
                 delay: 0.25,
                 duration: 0.7,
@@ -127,8 +173,12 @@ export default function Home() {
               <span className="relative inline-block text-green-600">
                 online
                 <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
+                  initial={{
+                    scaleX: 0,
+                  }}
+                  animate={{
+                    scaleX: 1,
+                  }}
                   transition={{
                     delay: 0.9,
                     duration: 0.6,
@@ -139,8 +189,14 @@ export default function Home() {
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{
+                opacity: 0,
+                y: 25,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
               transition={{
                 delay: 0.35,
                 duration: 0.7,
@@ -148,13 +204,20 @@ export default function Home() {
               }}
               className="mt-7 max-w-xl text-lg leading-8 text-gray-600 md:text-xl"
             >
-              Give your customers a beautiful digital menu, receive WhatsApp
-              orders and grow your food business — no app or website needed.
+              Create a beautiful digital menu, receive customer orders and
+              manage your food business from one simple platform, no website or
+              app required.
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{
+                opacity: 0,
+                y: 25,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
               transition={{
                 delay: 0.45,
                 duration: 0.7,
@@ -162,8 +225,13 @@ export default function Home() {
               className="mt-9 flex flex-wrap gap-4"
             >
               <motion.div
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{
+                  y: -3,
+                  scale: 1.02,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
               >
                 <Link
                   href="/register"
@@ -177,7 +245,14 @@ export default function Home() {
                 </Link>
               </motion.div>
 
-              <motion.div whileHover={{ y: -3 }} whileTap={{ scale: 0.98 }}>
+              <motion.div
+                whileHover={{
+                  y: -3,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
+              >
                 <a
                   href="#pricing"
                   className="flex items-center rounded-full border border-gray-300 bg-white px-8 py-4 font-medium text-gray-900 transition-colors hover:border-green-500 hover:text-green-700"
@@ -188,8 +263,12 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
               transition={{
                 delay: 0.65,
                 duration: 0.7,
@@ -198,11 +277,12 @@ export default function Home() {
             >
               <Benefit text="14-day free trial" />
               <Benefit text="No card required" />
-              <Benefit text="Setup in minutes" />
+              <Benefit text="Everything included" />
             </motion.div>
           </motion.div>
 
           {/* RIGHT */}
+
           <motion.div
             initial={{
               opacity: 0,
@@ -246,8 +326,12 @@ export default function Home() {
               className="relative overflow-hidden rounded-[32px] shadow-2xl shadow-black/15"
             >
               <motion.img
-                whileHover={{ scale: 1.06 }}
-                transition={{ duration: 0.7 }}
+                whileHover={{
+                  scale: 1.06,
+                }}
+                transition={{
+                  duration: 0.7,
+                }}
                 src="https://images.unsplash.com/photo-1600891964092-4316c288032e"
                 alt="African meals ready to serve"
                 className="h-[500px] w-full object-cover"
@@ -257,6 +341,7 @@ export default function Home() {
             </motion.div>
 
             {/* Order notification */}
+
             <motion.div
               initial={{
                 opacity: 0,
@@ -307,7 +392,8 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Orders card */}
+            {/* Order stats */}
+
             <motion.div
               initial={{
                 opacity: 0,
@@ -355,11 +441,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* ==================================================================== */}
+      {/* FEATURES                                                             */}
+      {/* ==================================================================== */}
+
       <motion.section
-        initial={{ opacity: 0, y: 60 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
+        initial={{
+          opacity: 0,
+          y: 60,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.15,
+        }}
         transition={{
           duration: 0.7,
           ease: easing,
@@ -367,9 +465,9 @@ export default function Home() {
         className="mx-auto max-w-7xl px-6 py-24"
       >
         <SectionHeading
-          badge="Everything in one place"
+          badge="Everything included"
           title="Everything your food business needs"
-          description="One simple tool to showcase your menu, make ordering easier and keep customers coming back."
+          description="One simple subscription gives you all the tools to showcase your menu, receive orders and manage your business."
         />
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -377,28 +475,30 @@ export default function Home() {
             delay={0}
             icon={<UtensilsCrossed size={24} />}
             title="Digital menu"
-            description="Customers see your meals, prices and photos anytime, from any phone."
+            description="Show customers your meals, prices, descriptions and photos from any phone."
           />
 
           <FeatureCard
             delay={0.12}
             icon={<MessageCircle size={24} />}
             title="WhatsApp orders"
-            description="Receive orders directly in the app your customers already use every day."
+            description="Make it easy for customers to move from browsing your menu to placing their order."
           />
 
           <FeatureCard
             delay={0.24}
             icon={<QrCode size={24} />}
             title="QR ordering"
-            description="Print a QR code for your table or storefront. Customers scan and order in seconds."
+            description="Put your QR code on tables, flyers, storefronts or packaging so customers can access your menu instantly."
           />
         </div>
       </motion.section>
 
-      {/* PRODUCT SHOWCASE */}
+      {/* ==================================================================== */}
+      {/* PRODUCT SHOWCASE                                                     */}
+      {/* ==================================================================== */}
+
       <section className="relative overflow-hidden bg-white py-24 md:py-32">
-        {/* Background decoration */}
         <motion.div
           className="pointer-events-none absolute -right-40 top-40 h-[500px] w-[500px] rounded-full bg-green-100/60 blur-3xl"
           animate={{
@@ -413,12 +513,22 @@ export default function Home() {
         />
 
         <div className="relative mx-auto max-w-7xl px-6">
-          {/* SECTION HEADING */}
           <motion.div
-            initial={{ opacity: 0, y: 35 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
+            initial={{
+              opacity: 0,
+              y: 35,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+              amount: 0.3,
+            }}
+            transition={{
+              duration: 0.7,
+            }}
             className="mx-auto max-w-3xl text-center"
           >
             <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
@@ -431,22 +541,31 @@ export default function Home() {
             </h2>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-600 md:text-lg">
-              Bukka gives you the tools to manage your menu, monitor orders and
-              share your business online, while giving customers a fast and
-              simple way to discover your food and place orders.
+              Bukka gives you the tools to manage your menu, monitor orders,
+              understand performance and share your business online from one
+              dashboard.
             </p>
           </motion.div>
 
-          {/* DASHBOARD SHOWCASE */}
+          {/* Dashboard */}
+
           <div className="mt-20 grid items-center gap-12 lg:grid-cols-[0.9fr_1.4fr]">
-            {/* TEXT */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
+              initial={{
+                opacity: 0,
+                x: -50,
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0,
+              }}
+              viewport={{
+                once: true,
+                amount: 0.2,
+              }}
               transition={{
                 duration: 0.75,
-                ease: [0.22, 1, 0.36, 1],
+                ease: easing,
               }}
             >
               <span className="text-sm font-semibold uppercase tracking-[0.15em] text-green-600">
@@ -458,10 +577,8 @@ export default function Home() {
               </h3>
 
               <p className="mt-5 text-base leading-7 text-gray-600 md:text-lg">
-                Your Bukka dashboard brings the important parts of your food
-                business together in one place. Track orders, monitor revenue,
-                manage your menu and share your ordering page without moving
-                between different tools.
+                Track your orders, monitor revenue, manage menu items and share
+                your ordering page without moving between different tools.
               </p>
 
               <div className="mt-8 space-y-5">
@@ -474,17 +591,22 @@ export default function Home() {
                 <ProductPoint
                   icon={<CheckCircle2 size={20} />}
                   title="Stay on top of every order"
-                  description="Monitor pending, completed and cancelled orders as they happen."
+                  description="Monitor pending, completed and cancelled orders from your dashboard."
                 />
 
                 <ProductPoint
                   icon={<QrCode size={20} />}
                   title="Share your menu anywhere"
-                  description="Copy your menu link or download your QR code for social media, tables and packaging."
+                  description="Use your menu link or QR code across WhatsApp, social media, tables and packaging."
                 />
               </div>
 
-              <motion.div whileHover={{ x: 4 }} className="mt-8 inline-flex">
+              <motion.div
+                whileHover={{
+                  x: 4,
+                }}
+                className="mt-8 inline-flex"
+              >
                 <Link
                   href="/register"
                   className="group inline-flex items-center gap-2 font-semibold text-green-600"
@@ -498,7 +620,6 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* DASHBOARD IMAGE */}
             <motion.div
               initial={{
                 opacity: 0,
@@ -510,10 +631,13 @@ export default function Home() {
                 x: 0,
                 scale: 1,
               }}
-              viewport={{ once: true, amount: 0.15 }}
+              viewport={{
+                once: true,
+                amount: 0.15,
+              }}
               transition={{
                 duration: 0.85,
-                ease: [0.22, 1, 0.36, 1],
+                ease: easing,
               }}
               className="relative"
             >
@@ -540,7 +664,6 @@ export default function Home() {
                 />
               </motion.div>
 
-              {/* Floating stat */}
               <motion.div
                 animate={{
                   y: [0, -8, 0],
@@ -558,6 +681,7 @@ export default function Home() {
 
                 <div>
                   <p className="text-xs text-gray-500">Business overview</p>
+
                   <p className="text-sm font-semibold text-gray-900">
                     Everything in one place
                   </p>
@@ -566,9 +690,9 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* CUSTOMER EXPERIENCE */}
+          {/* Customer experience */}
+
           <div className="mt-28 grid items-center gap-14 lg:grid-cols-2">
-            {/* MOBILE INTERFACE */}
             <motion.div
               initial={{
                 opacity: 0,
@@ -578,10 +702,13 @@ export default function Home() {
                 opacity: 1,
                 x: 0,
               }}
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{
+                once: true,
+                amount: 0.2,
+              }}
               transition={{
                 duration: 0.8,
-                ease: [0.22, 1, 0.36, 1],
+                ease: easing,
               }}
               className="relative flex justify-center lg:justify-start"
             >
@@ -601,19 +728,28 @@ export default function Home() {
                 <div className="overflow-hidden rounded-[34px] border-[7px] border-gray-900 bg-white shadow-2xl shadow-black/20">
                   <Image
                     src="/images/phone.png"
-                    alt="Bukka mobile customer menu showing food items and ordering interface"
+                    alt="Bukka mobile customer menu"
                     width={500}
                     height={1100}
                     className="h-auto w-full"
                   />
                 </div>
 
-                {/* Order badge */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 }}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.85,
+                  }}
+                  whileInView={{
+                    opacity: 1,
+                    scale: 1,
+                  }}
+                  viewport={{
+                    once: true,
+                  }}
+                  transition={{
+                    delay: 0.5,
+                  }}
                   animate={{
                     y: [0, -6, 0],
                   }}
@@ -628,6 +764,7 @@ export default function Home() {
                       <p className="text-xs font-medium text-green-600">
                         READY TO ORDER
                       </p>
+
                       <p className="mt-1 text-sm font-semibold text-gray-900">
                         One tap away
                       </p>
@@ -637,14 +774,22 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* TEXT */}
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
+              initial={{
+                opacity: 0,
+                x: 50,
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0,
+              }}
+              viewport={{
+                once: true,
+                amount: 0.2,
+              }}
               transition={{
                 duration: 0.75,
-                ease: [0.22, 1, 0.36, 1],
+                ease: easing,
               }}
             >
               <span className="text-sm font-semibold uppercase tracking-[0.15em] text-green-600">
@@ -658,8 +803,7 @@ export default function Home() {
               <p className="mt-5 text-base leading-7 text-gray-600 md:text-lg">
                 Customers get a clean, mobile-friendly menu built around your
                 business. They can see your meals, prices, descriptions and
-                availability and move from browsing to ordering without
-                downloading another app.
+                availability without downloading another app.
               </p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -678,7 +822,7 @@ export default function Home() {
                 <MiniFeature
                   icon={<MessageCircle size={19} />}
                   title="Easy ordering"
-                  description="Customers move from your menu to placing an order without unnecessary steps."
+                  description="Move customers from browsing to placing an order without unnecessary steps."
                 />
 
                 <MiniFeature
@@ -689,8 +833,12 @@ export default function Home() {
               </div>
 
               <motion.div
-                whileHover={{ y: -3 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{
+                  y: -3,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
                 className="mt-9 inline-block"
               >
                 <Link
@@ -709,15 +857,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* ==================================================================== */}
+      {/* HOW IT WORKS                                                         */}
+      {/* ==================================================================== */}
+
       <section className="relative overflow-hidden bg-white py-24">
         <div className="pointer-events-none absolute -right-32 top-0 h-[420px] w-[420px] rounded-full bg-green-50 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl px-6">
           <motion.div
-            initial={{ opacity: 0, y: 35 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            initial={{
+              opacity: 0,
+              y: 35,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+            }}
             transition={{
               duration: 0.65,
               ease: easing,
@@ -726,7 +885,7 @@ export default function Home() {
             <SectionHeading
               badge="Simple setup"
               title="Get your menu online in minutes"
-              description="No technical skills. No website. Just create, share and start taking orders."
+              description="No technical skills. No website. Just create, share and start receiving orders."
             />
           </motion.div>
 
@@ -737,32 +896,44 @@ export default function Home() {
               number={1}
               delay={0}
               title="Build your menu"
-              description="Add your meals, prices and photos. It only takes a few minutes."
+              description="Add your meals, prices, descriptions and photos."
             />
 
             <Step
               number={2}
               delay={0.15}
               title="Share your link or QR"
-              description="Put it on Instagram, WhatsApp, your storefront or delivery packs."
+              description="Share it on WhatsApp, Instagram, your storefront, tables or packaging."
             />
 
             <Step
               number={3}
               delay={0.3}
               title="Receive orders"
-              description="Orders land directly in WhatsApp, ready for you to confirm and prepare."
+              description="Customers browse your menu and move directly into ordering."
             />
           </div>
         </div>
       </section>
 
-      {/* PRICING */}
+      {/* ==================================================================== */}
+      {/* PRICING                                                              */}
+      {/* ==================================================================== */}
+
       <motion.section
         id="pricing"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
+        initial={{
+          opacity: 0,
+          y: 50,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.1,
+        }}
         transition={{
           duration: 0.7,
           ease: easing,
@@ -770,65 +941,23 @@ export default function Home() {
         className="mx-auto max-w-7xl px-6 py-24"
       >
         <SectionHeading
-          badge="Flexible pricing"
-          title="Simple, honest pricing"
-          description="Start free for 14 days. Pick a plan that fits your business and change it anytime."
+          badge="Simple pricing"
+          title="One subscription. Everything included."
+          description="Start free for 14 days, then choose the billing period that works best for your business."
         />
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <span
-            className={`text-sm font-medium ${
-              !yearly ? "text-gray-900" : "text-gray-500"
-            }`}
-          >
-            Monthly
-          </span>
+        {/* Trial notice */}
 
-          <button
-            role="switch"
-            aria-checked={yearly}
-            aria-label="Toggle yearly billing"
-            onClick={() => setYearly((value) => !value)}
-            className={`relative h-7 w-12 rounded-full transition-colors duration-300 ${
-              yearly ? "bg-green-600" : "bg-gray-300"
-            }`}
-          >
-            <motion.span
-              animate={{
-                x: yearly ? 20 : 0,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 30,
-              }}
-              className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow"
-            />
-          </button>
-
-          <span
-            className={`text-sm font-medium ${
-              yearly ? "text-gray-900" : "text-gray-500"
-            }`}
-          >
-            Yearly
-          </span>
-
-          <motion.span
-            animate={
-              yearly
-                ? {
-                    scale: [1, 1.08, 1],
-                  }
-                : {}
-            }
-            className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
-          >
-            Save 20%
-          </motion.span>
+        <div className="mt-7 flex justify-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-green-100 bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
+            <Sparkles size={15} />
+            14-day free trial • No card required
+          </div>
         </div>
 
-        <div className="mt-14 grid items-start gap-6 md:grid-cols-3">
+        {/* Pricing cards */}
+
+        <div className="mt-14 grid items-stretch gap-6 md:grid-cols-3">
           {PLAN_ORDER.map((key, index) => (
             <motion.div
               key={key}
@@ -850,24 +979,72 @@ export default function Home() {
                 ease: easing,
               }}
             >
-              <PlanCard planKey={key} yearly={yearly} />
+              <PlanCard planKey={key} />
             </motion.div>
           ))}
         </div>
+
+        {/* Shared features */}
+
+        <div className="mx-auto mt-14 max-w-3xl rounded-3xl border border-green-100 bg-white p-7 shadow-sm md:p-9">
+          <div className="text-center">
+            <span className="text-sm font-semibold uppercase tracking-[0.12em] text-green-600">
+              Included with every subscription
+            </span>
+
+            <h3 className="mt-2 text-2xl font-bold text-gray-900">
+              Everything you need to run your Bukka menu
+            </h3>
+          </div>
+
+          <div className="mt-7 grid gap-x-10 gap-y-4 sm:grid-cols-2">
+            {SUBSCRIPTION_FEATURES.map((feature) => (
+              <div key={feature} className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-50">
+                  <Check size={14} strokeWidth={3} className="text-green-600" />
+                </div>
+
+                <span className="text-sm leading-6 text-gray-600">
+                  {feature}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </motion.section>
 
-      {/* TESTIMONIAL */}
+      {/* ==================================================================== */}
+      {/* TESTIMONIAL                                                          */}
+      {/* ==================================================================== */}
+
       <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.25 }}
-        transition={{ duration: 0.8 }}
+        initial={{
+          opacity: 0,
+        }}
+        whileInView={{
+          opacity: 1,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.25,
+        }}
+        transition={{
+          duration: 0.8,
+        }}
         className="relative overflow-hidden bg-green-50/70 py-24"
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+          initial={{
+            opacity: 0,
+            scale: 0.9,
+          }}
+          whileInView={{
+            opacity: 1,
+            scale: 1,
+          }}
+          viewport={{
+            once: true,
+          }}
           transition={{
             duration: 0.7,
             ease: easing,
@@ -889,11 +1066,23 @@ export default function Home() {
         </motion.div>
       </motion.section>
 
-      {/* FAQ */}
+      {/* ==================================================================== */}
+      {/* FAQ                                                                  */}
+      {/* ==================================================================== */}
+
       <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
+        initial={{
+          opacity: 0,
+          y: 50,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.15,
+        }}
         transition={{
           duration: 0.7,
           ease: easing,
@@ -981,7 +1170,10 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* FINAL CTA */}
+      {/* ==================================================================== */}
+      {/* FINAL CTA                                                            */}
+      {/* ==================================================================== */}
+
       <section className="relative overflow-hidden bg-[#0F3D2E] py-24">
         <motion.div
           animate={{
@@ -1019,7 +1211,10 @@ export default function Home() {
             opacity: 1,
             y: 0,
           }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{
+            once: true,
+            amount: 0.3,
+          }}
           transition={{
             duration: 0.7,
             ease: easing,
@@ -1036,8 +1231,8 @@ export default function Home() {
           </h2>
 
           <p className="mt-5 text-lg text-white/70">
-            Create your digital menu, share your link and start receiving
-            WhatsApp orders today.
+            Create your digital menu, share your link and start receiving orders
+            today.
           </p>
 
           <motion.div
@@ -1054,7 +1249,7 @@ export default function Home() {
               href="/register"
               className="group inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 font-medium text-gray-900 shadow-xl"
             >
-              Create My Menu
+              Start My Free Trial
               <ArrowRight
                 size={18}
                 className="transition-transform duration-300 group-hover:translate-x-1"
@@ -1063,19 +1258,22 @@ export default function Home() {
           </motion.div>
 
           <p className="mt-5 text-sm text-white/50">
-            14-day free trial • No card required
+            14-day free trial • No card required • Full access
           </p>
         </motion.div>
       </section>
 
-      {/* FOOTER */}
+      {/* ==================================================================== */}
+      {/* FOOTER                                                               */}
+      {/* ==================================================================== */}
+
       <footer className="border-t border-gray-200 bg-[#fffdf7]">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <span className="text-lg font-bold text-gray-900">Bukka</span>
 
             <p className="mt-3 max-w-[220px] text-sm leading-6 text-gray-500">
-              Digital menus and WhatsApp ordering for modern food businesses.
+              Digital menus and ordering tools for modern food businesses.
             </p>
           </div>
 
@@ -1134,9 +1332,9 @@ export default function Home() {
   );
 }
 
-/* ---------------------------------- */
-/* SMALL COMPONENTS                   */
-/* ---------------------------------- */
+/* ========================================================================== */
+/* SMALL COMPONENTS                                                           */
+/* ========================================================================== */
 
 function ProductPoint({
   icon,
@@ -1198,6 +1396,7 @@ function Benefit({ text }: { text: string }) {
   return (
     <span className="flex items-center gap-2">
       <BadgeCheck size={17} className="text-green-600" />
+
       {text}
     </span>
   );
@@ -1289,11 +1488,6 @@ function FeatureCard({
         <h3 className="mt-5 text-xl font-bold text-gray-900">{title}</h3>
 
         <p className="mt-3 leading-7 text-gray-600">{description}</p>
-
-        <div className="mt-5 flex translate-x-[-8px] items-center gap-1 text-sm font-medium text-green-600 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-          Learn more
-          <ArrowRight size={15} />
-        </div>
       </div>
     </motion.div>
   );
@@ -1350,9 +1544,26 @@ function Step({
   );
 }
 
-function PlanCard({ planKey, yearly }: { planKey: PlanKey; yearly: boolean }) {
-  const plan = PLANS[planKey];
-  const price = yearly ? plan.yearly : plan.monthly;
+/* ========================================================================== */
+/* PRICING CARD                                                               */
+/* ========================================================================== */
+
+function PlanCard({ planKey }: { planKey: BillingPeriod }) {
+  const plan = SUBSCRIPTION_PLANS[planKey];
+
+  const periodLabel =
+    planKey === "monthly"
+      ? "/ month"
+      : planKey === "half_year"
+        ? "/ 6 months"
+        : "/ year";
+
+  const saving =
+    planKey === "half_year"
+      ? 2000 * 6 - plan.price
+      : planKey === "annual"
+        ? 2000 * 12 - plan.price
+        : 0;
 
   return (
     <motion.div
@@ -1364,97 +1575,72 @@ function PlanCard({ planKey, yearly }: { planKey: PlanKey; yearly: boolean }) {
         stiffness: 250,
         damping: 20,
       }}
-      className={`flex flex-col rounded-3xl bg-white p-8 ${
+      className={`flex h-full flex-col rounded-3xl bg-white p-8 ${
         plan.popular
           ? "shadow-xl ring-2 ring-green-600 md:-translate-y-3"
           : "border border-gray-100 shadow"
       }`}
     >
-      {plan.popular && (
-        <div className="mb-4 flex">
+      <div className="min-h-[32px]">
+        {plan.badge && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
             <Sparkles size={12} />
-            Most popular
+            {plan.badge}
           </span>
-        </div>
-      )}
-
-      <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-
-      <p className="mt-2 text-sm leading-6 text-gray-600">{plan.description}</p>
-
-      <div className="mt-6 flex items-baseline gap-1">
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={price}
-            initial={{
-              opacity: 0,
-              y: 8,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: -8,
-            }}
-            transition={{
-              duration: 0.2,
-            }}
-            className="text-4xl font-bold text-gray-900"
-          >
-            ₦{price.toLocaleString()}
-          </motion.span>
-        </AnimatePresence>
-
-        <span className="text-gray-500">/mo</span>
+        )}
       </div>
 
-      {yearly && (
-        <motion.p
-          initial={{
-            opacity: 0,
-            y: -4,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          className="mt-1 text-sm text-gray-500"
-        >
-          Billed ₦{(price * 12).toLocaleString()} yearly
-        </motion.p>
-      )}
+      <h3 className="mt-4 text-xl font-bold text-gray-900">{plan.name}</h3>
+
+      <p className="mt-2 min-h-[48px] text-sm leading-6 text-gray-600">
+        {plan.description}
+      </p>
+
+      <div className="mt-6 flex flex-wrap items-baseline gap-1">
+        <span className="text-4xl font-bold text-gray-900">
+          ₦{plan.price.toLocaleString()}
+        </span>
+
+        <span className="text-gray-500">{periodLabel}</span>
+      </div>
+
+      <div className="mt-2 min-h-[24px]">
+        {saving > 0 ? (
+          <p className="text-sm font-medium text-green-600">
+            Save ₦{saving.toLocaleString()}
+          </p>
+        ) : (
+          <p className="text-sm text-gray-400">Pay as you go</p>
+        )}
+      </div>
+
+      <div className="mt-6 border-t border-gray-100 pt-6">
+        <div className="flex items-start gap-2.5">
+          <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-green-600" />
+
+          <p className="text-sm leading-6 text-gray-600">
+            Full access to all Bukka features
+          </p>
+        </div>
+      </div>
 
       <motion.div
         whileTap={{
           scale: 0.98,
         }}
+        className="mt-auto pt-8"
       >
         <Link
-          href={`/register?plan=${planKey}`}
-          className={`mt-6 block rounded-full py-3.5 text-center font-medium transition-colors ${
+          href={`/register?billing=${planKey}`}
+          className={`block rounded-full py-3.5 text-center font-medium transition-colors ${
             plan.popular
               ? "bg-green-600 text-white shadow-lg shadow-green-600/20 hover:bg-green-700"
               : "border border-gray-300 text-gray-900 hover:border-green-600 hover:text-green-600"
           }`}
         >
-          Start free trial
+          Start 14-day free trial
         </Link>
       </motion.div>
-
-      <ul className="mt-8 space-y-3">
-        {plan.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2.5">
-            <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-50">
-              <Check size={13} strokeWidth={3} className="text-green-600" />
-            </div>
-
-            <span className="text-sm text-gray-600">{feature}</span>
-          </li>
-        ))}
-      </ul>
     </motion.div>
   );
 }

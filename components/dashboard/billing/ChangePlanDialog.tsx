@@ -1,210 +1,245 @@
-// "use client";
-
-// import { useState } from "react";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogFooter,
-// } from "@/components/ui/dialog";
-// import { PLANS, PLAN_ORDER, type PlanKey } from "@/components/Plan";
-
-// type Props = {
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-//   currentPlan: PlanKey;
-//   onConfirm: (plan: PlanKey) => Promise<void>;
-// };
-
-// export default function ChangePlanDialog({
-//   open,
-//   onOpenChange,
-//   currentPlan,
-//   onConfirm,
-// }: Props) {
-//   const [selected, setSelected] = useState<PlanKey>(currentPlan);
-//   const [submitting, setSubmitting] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-
-//   async function handleConfirm() {
-//     setSubmitting(true);
-//     setError(null);
-
-//     try {
-//       await onConfirm(selected);
-//       // On success the browser navigates away to Paystack's checkout —
-//       // nothing left to do here.
-//     } catch (err) {
-//       setSubmitting(false);
-//       setError(err instanceof Error ? err.message : "Couldn't start checkout.");
-//     }
-//   }
-
-//   return (
-//     <Dialog open={open} onOpenChange={onOpenChange}>
-//       <DialogContent className="sm:max-w-lg">
-//         <DialogHeader>
-//           <DialogTitle>Change plan</DialogTitle>
-//         </DialogHeader>
-
-//         <div className="grid sm:grid-cols-3 gap-3 mt-2">
-//           {PLAN_ORDER.map((key) => {
-//             const plan = PLANS[key];
-//             const isSelected = selected === key;
-//             return (
-//               <button
-//                 key={key}
-//                 type="button"
-//                 onClick={() => setSelected(key)}
-//                 className={`text-left rounded-2xl border p-4 transition ${
-//                   isSelected
-//                     ? "border-green-600 ring-2 ring-green-100 bg-green-50/40"
-//                     : "border-gray-200 hover:border-gray-300"
-//                 }`}
-//               >
-//                 <p className="font-bold text-gray-900">{plan.name}</p>
-//                 <p className="mt-1 text-lg font-bold text-gray-900">
-//                   ₦{plan.price.toLocaleString()}
-//                   <span className="text-sm font-normal text-gray-500">/mo</span>
-//                 </p>
-//               </button>
-//             );
-//           })}
-//         </div>
-
-//         {error && (
-//           <p role="alert" className="mt-3 text-sm text-red-600">
-//             {error}
-//           </p>
-//         )}
-
-//         <p className="mt-3 text-xs text-gray-400">
-//           You&rsquo;ll be taken to Paystack to complete payment securely. Your
-//           plan updates once payment is confirmed.
-//         </p>
-
-//         <DialogFooter className="mt-4">
-//           <button
-//             onClick={() => onOpenChange(false)}
-//             disabled={submitting}
-//             className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
-//           >
-//             Cancel
-//           </button>
-//           <button
-//             onClick={handleConfirm}
-//             disabled={submitting || selected === currentPlan}
-//             className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-//           >
-//             {submitting ? "Redirecting…" : "Continue to payment"}
-//           </button>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import {
+  type BillingPeriod,
+  PLAN_ORDER,
+  SUBSCRIPTION_PLANS,
+  getBillingPeriodSuffix,
+} from "@/components/Plan";
+
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { PLAN_ORDER, PlanKey, PLANS } from "@/components/Plan";
+
+import { Check } from "lucide-react";
 
 type Props = {
   open: boolean;
+
   onOpenChange: (open: boolean) => void;
-  currentPlan: PlanKey;
-  onConfirm: (plan: PlanKey) => Promise<void>;
+
+  currentBillingPeriod: BillingPeriod | null;
+
+  onConfirm: (selected: BillingPeriod) => Promise<void>;
+
+  loading?: boolean;
 };
 
 export default function ChangePlanDialog({
   open,
   onOpenChange,
-  currentPlan,
+  currentBillingPeriod,
   onConfirm,
+  loading = false,
 }: Props) {
-  const [selected, setSelected] = useState<PlanKey>(currentPlan);
-  const [submitting, setSubmitting] = useState(false);
+  const [selected, setSelected] = useState<BillingPeriod | null>(
+    currentBillingPeriod,
+  );
+
   const [error, setError] = useState<string | null>(null);
 
-  async function handleConfirm() {
-    setSubmitting(true);
-    setError(null);
+  /*
+   * Reset selected option whenever
+   * the dialog is opened.
+   */
+  useEffect(() => {
+    if (open) {
+      setSelected(currentBillingPeriod);
+      setError(null);
+    }
+  }, [open, currentBillingPeriod]);
+
+  async function handleContinue() {
+    if (!selected) {
+      setError("Please select a billing period.");
+
+      return;
+    }
+
+    if (selected === currentBillingPeriod) {
+      setError("Please select a different billing period.");
+
+      return;
+    }
 
     try {
+      setError(null);
+
+      /*
+       * This is the ONLY place where
+       * checkout is started.
+       */
       await onConfirm(selected);
-      // On success the browser navigates away to Paystack's checkout —
-      // nothing left to do here.
     } catch (err) {
-      setSubmitting(false);
       setError(err instanceof Error ? err.message : "Couldn't start checkout.");
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Change plan</DialogTitle>
+          <DialogTitle>Choose your billing period</DialogTitle>
+
+          <DialogDescription>
+            Every Bukka subscription includes the same features. Select the
+            billing period that works best for you.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid sm:grid-cols-3 gap-3 mt-2">
-          {PLAN_ORDER.map((key) => {
-            const plan = PLANS[key];
-            const isSelected = selected === key;
+        {/* OPTIONS */}
+
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {PLAN_ORDER.map((billingPeriod) => {
+            const plan = SUBSCRIPTION_PLANS[billingPeriod];
+
+            const isCurrent = currentBillingPeriod === billingPeriod;
+
+            const isSelected = selected === billingPeriod;
+
+            const savings =
+              billingPeriod === "half_year"
+                ? 2000 * 6 - plan.price
+                : billingPeriod === "annual"
+                  ? 2000 * 12 - plan.price
+                  : 0;
+
             return (
               <button
-                key={key}
+                key={billingPeriod}
                 type="button"
-                onClick={() => setSelected(key)}
-                className={`text-left rounded-2xl border p-4 transition ${
-                  isSelected
-                    ? "border-green-600 ring-2 ring-green-100 bg-green-50/40"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
+                /*
+                 * IMPORTANT:
+                 * Clicking a card only selects it.
+                 *
+                 * It does NOT redirect.
+                 */
+                onClick={() => {
+                  if (!isCurrent && !loading) {
+                    setSelected(billingPeriod);
+
+                    setError(null);
+                  }
+                }}
+                disabled={loading || isCurrent}
+                className={`
+                    relative rounded-2xl border p-5 text-left transition
+                    ${
+                      isSelected && !isCurrent
+                        ? "border-green-600 bg-green-50/40 ring-2 ring-green-100"
+                        : isCurrent
+                          ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-60"
+                          : "border-gray-200 hover:border-green-400"
+                    }
+                  `}
               >
-                <p className="font-bold text-gray-900">{plan.name}</p>
-                <p className="mt-1 text-lg font-bold text-gray-900">
-                  ₦{plan.monthly.toLocaleString()}
-                  <span className="text-sm font-normal text-gray-500">/mo</span>
+                {/* BADGE */}
+
+                {plan.badge && (
+                  <span className="mb-3 inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                    {plan.badge}
+                  </span>
+                )}
+
+                {/* SELECTED CHECK */}
+
+                {isSelected && !isCurrent && (
+                  <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-white">
+                    <Check size={15} strokeWidth={3} />
+                  </div>
+                )}
+
+                <h3 className="font-bold text-gray-900">{plan.name}</h3>
+
+                <p className="mt-1 text-sm leading-5 text-gray-500">
+                  {plan.description}
                 </p>
+
+                <div className="mt-5">
+                  <span className="text-2xl font-bold text-gray-900">
+                    ₦{plan.price.toLocaleString()}
+                  </span>
+
+                  <span className="ml-1 text-sm text-gray-500">
+                    {getBillingPeriodSuffix(billingPeriod)}
+                  </span>
+                </div>
+
+                {savings > 0 && (
+                  <p className="mt-2 text-xs font-medium text-green-600">
+                    Save ₦{savings.toLocaleString()}
+                  </p>
+                )}
+
+                <div className="mt-5 flex items-center gap-2 text-sm text-gray-600">
+                  <Check size={16} className="text-green-600" />
+                  Full access
+                </div>
+
+                <div className="mt-5">
+                  <span
+                    className={`
+                        block rounded-full py-2.5 text-center text-sm font-medium
+                        ${
+                          isCurrent
+                            ? "bg-gray-100 text-gray-500"
+                            : isSelected
+                              ? "bg-green-600 text-white"
+                              : "border border-gray-200 text-gray-900"
+                        }
+                      `}
+                  >
+                    {isCurrent
+                      ? "Current billing period"
+                      : isSelected
+                        ? "Selected"
+                        : "Select"}
+                  </span>
+                </div>
               </button>
             );
           })}
         </div>
 
+        {/* ERROR */}
+
         {error && (
-          <p role="alert" className="mt-3 text-sm text-red-600">
+          <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
-          </p>
+          </div>
         )}
 
-        <p className="mt-3 text-xs text-gray-400">
-          You&rsquo;ll be taken to Paystack to complete payment securely. Your
-          plan updates once payment is confirmed.
-        </p>
+        <div className="mt-3 rounded-xl bg-gray-50 px-4 py-3 text-xs leading-5 text-gray-500">
+          Select a billing period first. You will only be redirected to Paystack
+          after clicking Continue to payment.
+        </div>
 
-        <DialogFooter className="mt-4">
+        {/* ACTION BUTTONS */}
+
+        <DialogFooter className="mt-5 gap-2 sm:gap-0">
           <button
+            type="button"
             onClick={() => onOpenChange(false)}
-            disabled={submitting}
-            className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
+            disabled={loading}
+            className="rounded-full px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 disabled:opacity-50"
           >
             Cancel
           </button>
+
           <button
-            onClick={handleConfirm}
-            disabled={submitting || selected === currentPlan}
-            className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            type="button"
+            onClick={handleContinue}
+            disabled={loading || !selected || selected === currentBillingPeriod}
+            className="rounded-full bg-green-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {submitting ? "Redirecting…" : "Continue to payment"}
+            {loading ? "Redirecting..." : "Continue to payment"}
           </button>
         </DialogFooter>
       </DialogContent>
