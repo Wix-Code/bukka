@@ -16,6 +16,8 @@ export default function TrialBanner({ planStatus, trialEndsAt }: Props) {
 
   if (active) {
     const daysLeft = trialDaysLeft(trialEndsAt);
+
+    console.log("TrialBanner: daysLeft", daysLeft, "trialEndsAt", trialEndsAt);
     return (
       <div className="mb-6 rounded-2xl bg-green-50 text-green-700 text-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2">
         <span>

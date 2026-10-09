@@ -1021,3 +1021,10 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    message: "Paystack webhook route is active",
+  });
+}
