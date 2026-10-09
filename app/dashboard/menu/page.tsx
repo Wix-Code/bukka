@@ -144,6 +144,8 @@ export default async function MenuPage({
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
+  console.log("MenuPage: dishes", vendor.trial_ends_at, vendor.plan_status, dishes);
+
   return (
     <div>
       <TrialBanner
