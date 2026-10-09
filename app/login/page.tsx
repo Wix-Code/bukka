@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Suspense, useState } from "react";
@@ -28,137 +27,96 @@ function LoginForm() {
     setLoading(true);
     setError(null);
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
-      if (error) {
-        setError(
-          error.message === "Invalid login credentials"
-            ? "That email and password don't match our records."
-            : error.message
-        );
-        return;
-      }
+    setLoading(false);
 
-      const redirectTo = searchParams.get("redirectTo");
-
-      router.push(
-        redirectTo?.startsWith("/") &&
-          !redirectTo.startsWith("//") &&
-          !redirectTo.startsWith("/\\")
-          ? redirectTo
-          : "/dashboard"
+    if (error) {
+      setError(
+        error.message === "Invalid login credentials"
+          ? "That email and password don't match our records."
+          : error.message,
       );
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    router.push(searchParams.get("redirectTo") || "/dashboard");
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FCFAFD] px-6 py-12">
-      {/* Background decorations */}
-      <div className="pointer-events-none absolute -right-32 -top-32 h-[450px] w-[450px] rounded-full bg-[#D9BDE8]/35 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-32 h-[400px] w-[400px] rounded-full bg-[#F6DFE7]/60 blur-3xl" />
-
-      <div className="relative z-10 w-full max-w-[500px]">
-        {/* Brand */}
+    <div className="min-h-screen flex items-center justify-center bg-[#fffdf7] px-6 py-12">
+      <div className="w-full  max-w-[500px]">
         <Link
           href="/"
-          className="mb-8 flex flex-col items-center justify-center text-center"
+          className="block text-center flex items-center justify-center flex-col font-bold text-xl mb-8 text-gray-900"
         >
-          <img
-            className="w-[80px] object-contain"
-            src="/images/logo.png"
-            alt="Brand logo"
-          />
-          <p className="mt-2 text-xl font-bold tracking-tight text-[#351B46]">
+          <img className="w-[80px]" src={"/images/logo.png"} />
+          <p>
             Bukka
           </p>
         </Link>
 
-        {/* Login Card */}
-        <div className="rounded-3xl border border-[#EADFF0] bg-white p-8 shadow-xl shadow-[#351B46]/5 sm:p-10">
-          <div className="mb-8">
-            <div className="mb-5 inline-flex items-center rounded-full border border-[#E8D5F0] bg-[#F7F0FA] px-4 py-2 text-xs font-semibold tracking-wide text-[#763C92]">
-              YOUR STORE, YOUR STYLE
-            </div>
+        <div className="bg-white p-8 rounded-3xl shadow-xl">
+          <h1 className="text-3xl font-bold leading-tight">Welcome back</h1>
+          <p className="mt-2 text-gray-600">
+            Log in to manage your digital menu and orders.
+          </p>
 
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-[#351B46]">
-              Welcome back
-            </h1>
+          <form onSubmit={login} noValidate className="mt-8">
+            <Input
+              label="Email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-            <p className="mt-3 leading-7 text-gray-500">
-              Log in to manage your online store, products, and orders.
-            </p>
-          </div>
+            <Input
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <form onSubmit={login} noValidate>
-            <div className="space-y-1">
-              <Input
-                label="Email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <Input
-                label="Password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div className="-mt-2 mb-6 flex justify-end">
+            <div className="flex justify-end -mt-2 mb-6">
               <Link
                 href="/forgot-password"
-                className="text-sm font-medium text-[#763C92] transition-colors hover:text-[#351B46]"
+                className="text-sm text-gray-500 hover:text-gray-900 transition"
               >
                 Forgot password?
               </Link>
             </div>
 
             {error && (
-              <div
-                role="alert"
-                className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600"
-              >
+              <p role="alert" className="mb-4 text-sm text-red-600">
                 {error}
-              </div>
+              </p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-[#763C92] py-4 font-semibold text-white shadow-lg shadow-[#763C92]/20 transition-all duration-300 hover:bg-[#5D2D75] hover:shadow-xl hover:shadow-[#763C92]/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="bg-green-600 text-white w-full py-4 rounded-full font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {loading ? "Logging in…" : "Log in"}
             </button>
           </form>
         </div>
 
-        {/* Registration */}
-        <p className="mt-8 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-gray-600">
           New to Bukka?{" "}
           <Link
             href="/register"
-            className="font-semibold text-[#763C92] transition-colors hover:text-[#351B46] hover:underline"
+            className="text-gray-900 font-medium hover:underline"
           >
             Create an account
           </Link>
-        </p>
-
-        <p className="mt-5 text-center text-xs text-gray-400">
-          A simpler way to showcase and sell your products.
         </p>
       </div>
     </div>
