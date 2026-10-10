@@ -15,6 +15,7 @@ import EmptyState from "@/components/reusuable/EmptyState";
 import TrialBanner from "@/components/reusuable/TrialBanner";
 import Link from "next/link";
 
+
 const toneStyles: Record<string, string> = {
   green: "bg-green-50 text-green-600",
   yellow: "bg-yellow-50 text-yellow-600",

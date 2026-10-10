@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 import Input from "@/components/reusuable/InputProps";
 import ImageUpload from "@/components/reusuable/ImageUpload";
 import ChangePasswordDialog from "./ChangePasswordDialog";
+import { generateSlug } from "@/lib/generaateSlug";
+import { useRouter } from "next/navigation";
 
 type VendorFields = {
   name: string;
@@ -28,28 +30,68 @@ export default function SettingsForm({ vendorId, initialVendor }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const router = useRouter();
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    setSaved(false);
+  
+async function handleSubmit(e: FormEvent) {
+  e.preventDefault();
 
-    const { error } = await supabase
-      .from("vendors")
-      .update(form)
-      .eq("id", vendorId);
+  if (!form.name.trim()) {
+    setError("Restaurant name cannot be empty.");
+    return;
+  }
 
-    setSaving(false);
+  setSaving(true);
+  setError(null);
+  setSaved(false);
 
-    if (error) {
-      setError(error.message);
+  try {
+    const newSlug = generateSlug(form.name);
+
+    if (!newSlug) {
+      setError("Please enter a valid restaurant name.");
       return;
     }
 
+    const { error: updateError } = await supabase
+      .from("vendors")
+      .update({
+        ...form,
+        name: form.name.trim(),
+        slug: newSlug,
+      })
+      .eq("id", vendorId)
+      .select("id")
+      .single();
+
+    if (updateError) {
+      // Handle duplicate slugs if the database
+      // has a unique constraint on vendors.slug.
+      if (updateError.code === "23505") {
+        setError(
+          "A restaurant already uses this name. Please choose another name.",
+        );
+        return;
+      }
+
+      throw updateError;
+    }
+
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+
+    // Refresh server components to fetch the new slug.
+    router.refresh();
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Failed to update restaurant settings.",
+    );
+  } finally {
+    setSaving(false);
   }
+}
+
 
   return (
     <div className="max-w-lg">
