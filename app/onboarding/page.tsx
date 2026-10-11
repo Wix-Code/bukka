@@ -63,17 +63,27 @@ export default function Onboarding() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/login");
   }
 
+
+  const isStep1Valid =
+    form.description.trim() !== "" &&
+    form.location.trim() !== "" &&
+    form.openingHours.trim() !== "";
+
+  const isStep2Valid =
+    form.phone.trim() !== "" && form.coverImage.trim() !== "";
+    
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fffdf7] px-6 py-12">
       <div className="w-full max-w-lg">
         <Link
           href="/"
-          className="block text-center font-bold text-xl mb-8 text-gray-900"
+          className="block text-center flex items-center justify-center flex-col font-bold text-xl mb-8 text-gray-900"
         >
-          Bukka
+          <img className="w-[80px]" src={"/images/logo.png"} />
+          <p>Bukka</p>
         </Link>
 
         <div className="bg-white p-8 rounded-3xl shadow-xl">
@@ -138,7 +148,8 @@ export default function Onboarding() {
 
                 <button
                   type="submit"
-                  className="bg-green-600 text-white w-full py-4 rounded-full font-medium hover:bg-green-700 transition"
+                  disabled={!isStep1Valid}
+                  className="bg-green-600 text-white w-full py-4 rounded-full font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   Continue
                 </button>
@@ -193,7 +204,9 @@ export default function Onboarding() {
                   </button>
                   <button
                     type="submit"
-                    disabled={saving || !vendorId}
+                    disabled={
+                      saving || !vendorId || !isStep1Valid || !isStep2Valid
+                    }
                     className="flex-1 bg-green-600 text-white py-4 rounded-full font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
                     {saving ? "Setting up…" : "Finish setup"}

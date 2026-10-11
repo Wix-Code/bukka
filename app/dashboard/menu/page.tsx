@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import MenuManager from "@/components/dashboard/menu/MenuManager";
-import type { Dish } from "@/components/dashboard/menu/DishFormDialog";
+import type {
+  Dish,
+  Category,
+} from "@/components/dashboard/menu/DishFormDialog";
 import Pagination from "@/components/reusuable/PaginationProps";
 import TrialBanner from "@/components/reusuable/TrialBanner";
 
@@ -142,6 +145,11 @@ export default async function MenuPage({
     })
     .range(from, to);
 
+  const { data: categories, error: categoriesError } = await supabase
+    .from("categories")
+    .select("id, name")
+    .order("name", { ascending: true });
+
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
   console.log("MenuPage: dishes", vendor.trial_ends_at, vendor.plan_status, dishes);
@@ -164,6 +172,7 @@ export default async function MenuPage({
         initialDishes={(dishes as Dish[]) ?? []}
         planStatus={vendor.plan_status}
         trialEndsAt={vendor.trial_ends_at}
+        categories={(categories as Category[]) ?? []}
       />
 
       {dishes && dishes.length > 0 && (

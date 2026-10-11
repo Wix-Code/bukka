@@ -5,11 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home2, Shop, Bag2, HambergerMenu, CloseSquare } from "iconsax-react";
 import LogoutButton from "./LogoutButton";
+import { Tags } from "lucide-react";
 
 const navItems = [
   { label: "Overview", href: "/admin-dashboard", icon: Home2 },
   { label: "Vendors", href: "/admin-dashboard/vendors", icon: Shop },
   { label: "Orders", href: "/admin-dashboard/orders", icon: Bag2 },
+  { label: "Categories", href: "/admin-dashboard/categories", icon: Tags  },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

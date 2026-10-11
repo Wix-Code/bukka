@@ -69,6 +69,7 @@ export type Dish = {
   price: number;
   image: string;
   available: boolean;
+  category_id: string | null;
 };
 
 // Wrapped in cache() so generateMetadata and the page component can both
