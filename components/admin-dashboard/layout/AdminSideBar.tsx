@@ -91,7 +91,7 @@ export default function AdminSidebar() {
       </aside>
 
       {/* Mobile top bar with hamburger */}
-      <header className="lg:hidden fixed top-0 inset-x-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white px-4">
+      <header className="lg:hidden fixed top-0 inset-x-0 z-40 mb-10 flex h-16 items-center justify-between border-b border-gray-100 bg-white px-4">
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"

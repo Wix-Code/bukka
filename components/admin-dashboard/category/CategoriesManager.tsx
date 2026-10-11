@@ -242,48 +242,54 @@ export default function CategoriesManager({ initialCategories }: Props) {
           if (!saving) setFormOpen(open);
         }}
       >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? "Edit category" : "Add category"}
-            </DialogTitle>
-          </DialogHeader>
+        <div className="mx-4 md:mx-0">
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {editing ? "Edit category" : "Add category"}
+              </DialogTitle>
+            </DialogHeader>
 
-          <form onSubmit={handleSubmit} noValidate className="mt-2">
-            <Input
-              label="Category name"
-              placeholder="Soups & Stews"
-              maxLength={40}
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <form onSubmit={handleSubmit} noValidate className="mt-2">
+              <Input
+                label="Category name"
+                placeholder="Soups & Stews"
+                maxLength={40}
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
 
-            {formError && (
-              <p role="alert" className="mb-2 text-sm text-red-600">
-                {formError}
-              </p>
-            )}
+              {formError && (
+                <p role="alert" className="mb-2 text-sm text-red-600">
+                  {formError}
+                </p>
+              )}
 
-            <DialogFooter className="mt-4">
-              <button
-                type="button"
-                onClick={() => setFormOpen(false)}
-                disabled={saving}
-                className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                {saving ? "Saving…" : editing ? "Save changes" : "Add category"}
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
+              <DialogFooter className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setFormOpen(false)}
+                  disabled={saving}
+                  className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {saving
+                    ? "Saving…"
+                    : editing
+                      ? "Save changes"
+                      : "Add category"}
+                </button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </div>
       </Dialog>
 
       {/* Delete confirmation */}
