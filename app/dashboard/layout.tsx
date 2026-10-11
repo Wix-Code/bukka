@@ -40,7 +40,7 @@ export default async function DashboardLayout({
           avatarUrl={vendor?.avatar_url || null}
           vendorId={user.id}
         />
-        <main className="p-6">{children}</main>
+        <main className="md:p-6 px-4">{children}</main>
       </div>
     </div>
   );
