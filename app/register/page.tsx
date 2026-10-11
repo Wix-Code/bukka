@@ -37,6 +37,7 @@ export default function Signup() {
       email: email.trim(),
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/onboarding`,
         data: {
           restaurant_name: restaurantName.trim(),
         },
