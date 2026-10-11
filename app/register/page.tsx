@@ -143,7 +143,8 @@ export default function Signup() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        {
+          !checkEmail && (<p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
           <Link
             href="/login"
@@ -151,7 +152,8 @@ export default function Signup() {
           >
             Log in
           </Link>
-        </p>
+        </p>)
+        }
       </div>
     </div>
   );
