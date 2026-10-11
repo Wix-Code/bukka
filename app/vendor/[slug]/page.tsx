@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 
 import VendorHeader from "@/components/vendor/VendorHeader";
 import { getVendorBySlug, getVendorMenu, recordPageView } from "@/lib/vendors";
+import { createSupabaseServerClient } from "@/lib/server";
 import MenuSection from "@/components/reusuable/MenuSection";
 import Pagination from "@/components/reusuable/PaginationProps";
-import { after } from "next/server";
 
 const FALLBACK_COVER_IMAGE =
   "https://images.unsplash.com/photo-1600891964092-4316c288032e";
@@ -14,7 +15,10 @@ const PAGE_SIZE = 4;
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    category?: string;
+  }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -34,7 +38,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function VendorPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { page: pageParam } = await searchParams;
+
+  const { page: pageParam, category: categoryParam } = await searchParams;
 
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
@@ -44,15 +49,58 @@ export default async function VendorPage({ params, searchParams }: Props) {
     notFound();
   }
 
+  const supabase = await createSupabaseServerClient();
+
+  // Fetch all available categories
+  const { data: categoryRows, error: categoryError } = await supabase
+    .from("categories")
+    .select("id, name")
+    .order("name", { ascending: true });
+
+  if (categoryError) {
+    console.error("Could not load categories:", categoryError.message);
+  }
+
+  const categories = categoryRows ?? [];
+
+  const selectedCategory = categories.some(
+    (category) => category.id === categoryParam,
+  )
+    ? categoryParam!
+    : "";
+
+  // Fetch the vendor's dishes
   const allDishes = await getVendorMenu(vendor.id);
+
   after(() => recordPageView(vendor.id));
 
-  const totalPages = Math.max(1, Math.ceil(allDishes.length / PAGE_SIZE));
+  // Filter across the entire menu before pagination
+  const filteredDishes = selectedCategory
+    ? allDishes.filter((dish) => dish.category_id === selectedCategory)
+    : allDishes;
 
-  const from = (currentPage - 1) * PAGE_SIZE;
+  const totalItems = filteredDishes.length;
+
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+  const safePage = Math.min(currentPage, totalPages);
+
+  const from = (safePage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE;
 
-  const dishes = allDishes.slice(from, to);
+  const dishes = filteredDishes.slice(from, to);
+
+  function createPageHref(page: number) {
+    const params = new URLSearchParams();
+
+    params.set("page", String(page));
+
+    if (selectedCategory) {
+      params.set("category", selectedCategory);
+    }
+
+    return `/vendor/${encodeURIComponent(slug)}?${params.toString()}`;
+  }
 
   return (
     <main className="min-h-screen bg-[#fffdf7]">
@@ -71,13 +119,16 @@ export default async function VendorPage({ params, searchParams }: Props) {
         dishes={dishes}
         phone={vendor.phone}
         vendorId={vendor.id}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        totalItems={totalItems}
       />
 
       <div className="mx-auto max-w-7xl px-6 pb-10">
         <Pagination
-          currentPage={currentPage}
+          currentPage={safePage}
           totalPages={totalPages}
-          createPageHref={(page) => `/vendor/${slug}?page=${page}`}
+          createPageHref={createPageHref}
         />
       </div>
 

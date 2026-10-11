@@ -5,6 +5,7 @@ import { Add, Dropbox, Edit2, Trash, SearchNormal1 } from "iconsax-react";
 import { supabase } from "@/lib/supabase";
 
 import DishFormDialog, {
+  Category,
   type Dish,
 } from "@/components/dashboard/menu/DishFormDialog";
 
@@ -17,6 +18,7 @@ type Props = {
   initialDishes: Dish[];
   planStatus: string;
   trialEndsAt: string | null;
+  categories: Category[];
 };
 
 export default function MenuManager({
@@ -24,6 +26,7 @@ export default function MenuManager({
   initialDishes,
   planStatus,
   trialEndsAt,
+  categories,
 }: Props) {
   const [dishes, setDishes] = useState<Dish[]>(initialDishes);
   const [formOpen, setFormOpen] = useState(false);
@@ -270,6 +273,7 @@ export default function MenuManager({
       <DishFormDialog
         open={formOpen}
         onOpenChange={setFormOpen}
+        categories={categories}
         dish={editingDish}
         vendorId={vendorId}
         onSave={handleSave}
