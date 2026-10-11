@@ -31,6 +31,7 @@ import {
   SUBSCRIPTION_FEATURES,
   SUBSCRIPTION_PLANS,
 } from "@/components/Plan";
+import WhatsAppButton from "@/components/reusuable/ChatCustomerButton";
 
 /* -------------------------------------------------------------------------- */
 /* FAQ                                                                         */
@@ -1328,6 +1329,7 @@ export default function Home() {
           &copy; {new Date().getFullYear()} Bukka. All rights reserved.
         </div>
       </footer>
+      <WhatsAppButton />
     </main>
   );
 }
