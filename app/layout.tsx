@@ -11,10 +11,13 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+
 export const metadata: Metadata = {
-  title: "Buka Online — Digital Menus for Food Vendors",
-  description: "Order from your favorite buka on WhatsApp",
+  title: "Bukka Online | Digital Menus & Online Ordering for Food Businesses",
+  description:
+    "Take your food business online with Bukka. Create beautiful digital menus, showcase your meals, receive customer orders, manage your business, and share your menu link or QR code across WhatsApp and social media. No website or app required.",
 };
+
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
