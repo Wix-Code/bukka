@@ -14,7 +14,7 @@ import { createSupabaseServerClient } from "@/lib/server";
 import EmptyState from "@/components/reusuable/EmptyState";
 import TrialBanner from "@/components/reusuable/TrialBanner";
 import Link from "next/link";
-
+import CompleteProfilePopup from "@/components/dashboard/overview/CompleteProfilePopup";
 
 const toneStyles: Record<string, string> = {
   green: "bg-green-50 text-green-600",
@@ -59,9 +59,11 @@ export default async function DashboardOverview() {
   ] = await Promise.all([
     supabase
       .from("vendors")
-      .select("name, slug, plan_status, trial_ends_at")
+      // Replace "phone" with your actual WhatsApp column
+      // if your database uses a different name.
+      .select("name, slug, phone, plan_status, trial_ends_at")
       .eq("id", user.id)
-      .single(),
+      .maybeSingle(),
     supabase
       .from("orders")
       .select("item_price, status")
@@ -83,6 +85,12 @@ export default async function DashboardOverview() {
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
+
+  // Show the profile reminder when important
+  // business information is missing.
+  const isProfileComplete = Boolean(
+    vendor?.name?.trim() && vendor?.phone?.trim(),
+  );
 
   const ordersThisMonth = monthOrders ?? [];
   const revenueThisMonth = ordersThisMonth
@@ -143,6 +151,11 @@ export default async function DashboardOverview() {
 
   return (
     <div>
+      <CompleteProfilePopup
+        isProfileComplete={isProfileComplete}
+        userId={user.id}
+      />
+
       <p className="text-gray-500 mb-6">
         Here&rsquo;s how {vendor?.name ?? "your restaurant"} is doing today.
       </p>

@@ -314,7 +314,7 @@ export default function NotificationBell({ vendorId }: { vendorId: string }) {
           <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-100 z-30 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <p className="font-bold text-gray-900 text-sm">Notifications</p>
-              <button
+              {/* <button
                 onClick={() => {
                   // Inside a click, so this also unlocks audio
                   unlockAudio().then(playAlarm);
@@ -322,7 +322,7 @@ export default function NotificationBell({ vendorId }: { vendorId: string }) {
                 className="text-xs font-medium text-gray-400 hover:text-gray-700 transition"
               >
                 🔊 Test sound
-              </button>
+              </button> */}
             </div>
 
             <div className="max-h-80 overflow-y-auto">
