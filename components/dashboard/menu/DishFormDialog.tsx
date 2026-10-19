@@ -109,7 +109,7 @@ export default function DishFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
+      <DialogContent className="flex w-[calc(100%-2rem)] max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:w-full sm:max-w-md">
         {/* FIXED HEADER */}
         <DialogHeader className="shrink-0 border-b border-gray-100 px-6 py-5">
           <DialogTitle>{dish ? "Edit dish" : "Add a new dish"}</DialogTitle>
