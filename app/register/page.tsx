@@ -45,7 +45,7 @@ export default function Signup() {
         email: normalizedEmail,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             restaurant_name: name,
           },
@@ -81,7 +81,7 @@ export default function Signup() {
       }
 
       if (data.session) {
-        router.replace("/onboarding");
+        router.replace("/dashboard");
         return;
       }
 
