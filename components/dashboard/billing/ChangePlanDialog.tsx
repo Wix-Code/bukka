@@ -82,7 +82,7 @@ export default function ChangePlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90dvh] max-w-3xl flex-col gap-0 overflow-hidden p-0">
+      <DialogContent className="flex w-[calc(100%-2rem)] max-h-[90dvh] max-w-3xl flex-col gap-0 overflow-hidden p-0 sm:w-full">
         {/* FIXED HEADER */}
 
         <DialogHeader className="shrink-0 px-6 pb-4 pt-6">

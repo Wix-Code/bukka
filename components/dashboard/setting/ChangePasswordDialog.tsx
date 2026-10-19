@@ -68,7 +68,7 @@ export default function ChangePasswordDialog({ open, onOpenChange }: Props) {
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Change password</DialogTitle>
         </DialogHeader>
