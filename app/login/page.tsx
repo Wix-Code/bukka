@@ -105,7 +105,7 @@ function LoginForm() {
       );
 
       if (!onboardingComplete) {
-        router.replace("/onboarding");
+        router.replace("/dashboard");
         router.refresh();
         return;
       }
