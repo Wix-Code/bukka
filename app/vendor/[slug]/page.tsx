@@ -11,7 +11,7 @@ import Pagination from "@/components/reusuable/PaginationProps";
 const FALLBACK_COVER_IMAGE =
   "https://images.unsplash.com/photo-1600891964092-4316c288032e";
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 10;
 
 type Props = {
   params: Promise<{ slug: string }>;
