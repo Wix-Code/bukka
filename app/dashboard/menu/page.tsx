@@ -161,12 +161,6 @@ export default async function MenuPage({
         trialEndsAt={vendor.trial_ends_at ?? null}
       />
 
-      {error && (
-        <div className="mb-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
-          Couldn&rsquo;t load menu items: {error.message}
-        </div>
-      )}
-
       <MenuManager
         vendorId={user.id}
         initialDishes={(dishes as Dish[]) ?? []}

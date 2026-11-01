@@ -169,7 +169,7 @@ export default function MenuSection({
           </p>
         </div>
 
-        {currentTime && (
+        {/* {currentTime && (
           <span
             className={`px-4 py-2 rounded-full text-sm font-medium ${
               isOpen
@@ -179,7 +179,7 @@ export default function MenuSection({
           >
             {isOpen ? "Open Now" : "Closed"}
           </span>
-        )}
+        )} */}
       </div>
 
       {/* Search and Category Filter */}
