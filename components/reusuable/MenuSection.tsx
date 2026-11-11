@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import FoodCard from "@/components/reusuable/FoodCard";
 import SelectDropdown from "@/components/reusuable/SelectDropdown";
-import type { Dish } from "@/lib/vendors";
 import EmptyState from "./EmptyState";
 import { Dropbox } from "iconsax-react";
+import { Dish } from "../dashboard/menu/DishFormDialog";
 
 type Category = {
   id: string;

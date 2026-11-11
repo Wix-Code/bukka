@@ -74,12 +74,15 @@ const easing = [0.22, 1, 0.36, 1] as const;
 /* PAGE                                                                         */
 /* -------------------------------------------------------------------------- */
 
-export default function LandingPage() {
+export default function LandingPage({
+  vendorsSlot,
+}: {
+  vendorsSlot?: React.ReactNode;
+}) {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
     <main className="min-h-screen bg-[#fffdf7]">
-
       {/* ==================================================================== */}
       {/* HERO                                                                 */}
       {/* ==================================================================== */}
@@ -858,6 +861,12 @@ export default function LandingPage() {
       </section>
 
       {/* ==================================================================== */}
+      {/* FEATURED VENDORS (server-rendered, passed in from app/page.tsx)  */}
+      {/* ==================================================================== */}
+
+      {vendorsSlot}
+
+      {/* ==================================================================== */}
       {/* HOW IT WORKS                                                         */}
       {/* ==================================================================== */}
 
@@ -1267,7 +1276,6 @@ export default function LandingPage() {
       {/* FOOTER                                                               */}
       {/* ==================================================================== */}
 
-      
       <WhatsAppButton />
     </main>
   );
