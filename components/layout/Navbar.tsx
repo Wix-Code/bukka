@@ -56,7 +56,7 @@ export default function Navbar() {
             />
 
             <span className="hidden text-2xl font-bold text-green-600 md:block">
-              BukaOnline
+              Bukka
             </span>
           </Link>
 

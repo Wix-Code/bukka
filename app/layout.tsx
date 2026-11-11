@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Shell from "@/components/reusuable/Shell";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -36,9 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <Navbar />
+        <Shell>
         {children}
-        <Footer />
+        </ Shell>
         {/* Track visitors to MyBukka */}
         <Analytics />
       </body>
