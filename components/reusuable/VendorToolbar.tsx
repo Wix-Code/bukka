@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowUpDown, ChevronDown, MapPin, Search, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowUpDown, MapPin, Search, X } from "lucide-react";
+import SelectDropdown from "./SelectDropdown"; // adjust path to where SelectDropdown lives
 
 type State = {
   q: string;
@@ -12,16 +13,13 @@ type State = {
 };
 
 type Props = {
-  basePath: string;
+  basePath?: string;
   initial: State;
   defaultSort: string;
   locations: { name: string; count: number }[];
   sortOptions: { value: string; label: string }[];
   budgetOptions: number[];
 };
-
-const selectClass =
-  "h-12 w-full appearance-none rounded-2xl border border-stone-200 bg-white pl-11 pr-10 text-sm text-stone-800 outline-none transition focus:border-green-600 focus:ring-4 focus:ring-green-600/10";
 
 export default function VendorsToolbar({
   basePath,
@@ -32,6 +30,7 @@ export default function VendorsToolbar({
   budgetOptions,
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   const [state, setState] = useState<State>(initial);
@@ -55,7 +54,8 @@ export default function VendorsToolbar({
     const query = params.toString();
 
     startTransition(() => {
-      router.replace(query ? `${basePath}?${query}` : basePath, {
+      // Use the real pathname so clearing every filter really resets the URL
+      router.replace(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
       });
     });
@@ -86,11 +86,20 @@ export default function VendorsToolbar({
     update({ q: "", location: "", sort: defaultSort, under: null });
   }
 
+  const locationOptions = [
+    { label: "All locations", value: "" },
+    ...locations.map((location) => ({
+      label: `${location.name} (${location.count})`,
+      value: location.name,
+    })),
+  ];
+
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-white p-3 shadow-xl shadow-green-950/10 ring-1 ring-black/5 sm:p-4">
+    // No overflow-hidden here: it would clip the dropdown menus
+    <div className="relative rounded-3xl bg-white p-3 shadow-xl shadow-green-950/10 ring-1 ring-black/5 sm:p-4">
       <div
         aria-hidden
-        className={`absolute inset-x-0 top-0 h-0.5 bg-green-500 transition-opacity ${
+        className={`absolute inset-x-6 top-0 h-0.5 rounded-full bg-green-500 transition-opacity ${
           isPending ? "animate-pulse opacity-100" : "opacity-0"
         }`}
       />
@@ -126,59 +135,28 @@ export default function VendorsToolbar({
         </label>
 
         {/* LOCATION */}
-        <label className="relative block lg:w-60">
-          <span className="sr-only">Filter by location</span>
-
-          <MapPin
-            size={18}
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"
-          />
-
-          <select
-            value={state.location}
-            onChange={(event) => update({ location: event.target.value })}
-            className={selectClass}
-          >
-            <option value="">All locations</option>
-            {locations.map((location) => (
-              <option key={location.name} value={location.name}>
-                {location.name} ({location.count})
-              </option>
-            ))}
-          </select>
-
-          <ChevronDown
-            size={16}
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400"
-          />
-        </label>
+        <SelectDropdown
+          noMargin
+          className="lg:w-60"
+          triggerClassName="h-12 py-0"
+          ariaLabel="Filter by location"
+          icon={<MapPin size={18} />}
+          options={locationOptions}
+          value={state.location}
+          onChange={(value) => update({ location: value })}
+        />
 
         {/* SORT */}
-        <label className="relative block lg:w-56">
-          <span className="sr-only">Sort vendors</span>
-
-          <ArrowUpDown
-            size={18}
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"
-          />
-
-          <select
-            value={state.sort}
-            onChange={(event) => update({ sort: event.target.value })}
-            className={selectClass}
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <ChevronDown
-            size={16}
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400"
-          />
-        </label>
+        <SelectDropdown
+          noMargin
+          className="lg:w-56"
+          triggerClassName="h-12 py-0"
+          ariaLabel="Sort vendors"
+          icon={<ArrowUpDown size={18} />}
+          options={sortOptions}
+          value={state.sort}
+          onChange={(value) => update({ sort: value })}
+        />
       </div>
 
       {/* BUDGET CHIPS */}

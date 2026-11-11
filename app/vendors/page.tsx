@@ -21,7 +21,6 @@ export const metadata: Metadata = {
    decides which vendors are listed live in lib/vendor-directory.ts.
 ------------------------------------------------------------------- */
 
-const BASE_PATH = "/vendors";
 const PAGE_SIZE = 12;
 
 type SortKey = "newest" | "name" | "price_asc" | "price_desc";
@@ -75,7 +74,9 @@ function buildHref({
 
   const query = params.toString();
 
-  return query ? `${BASE_PATH}?${query}` : BASE_PATH;
+  // FIX: never return "" (an empty href means "stay on the current URL",
+  // which is why Previous / page 1 did nothing). "?" resets the query string.
+  return query ? `?${query}` : "?";
 }
 
 /* ------------------------------------------------------------------
@@ -267,7 +268,6 @@ export default async function VendorsPage({
       {/* TOOLBAR */}
       <section className="relative z-10 mx-auto -mt-14 max-w-6xl px-4 sm:px-6">
         <VendorsToolbar
-          basePath={BASE_PATH}
           initial={{ q, location, sort, under }}
           defaultSort="newest"
           locations={locations}
