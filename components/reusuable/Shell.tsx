@@ -4,7 +4,22 @@ import { usePathname } from "next/navigation";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 
-const HIDE_ON = ["/login", "/register", "/menu", "/forgot-password", "/menu"];
+const HIDE_ON = [
+  "/login",
+  "/register",
+  "/menu",
+  "/forgot-password",
+  "/menu",
+  "/dashboard",
+  "/dashboard/vendors",
+  "/dashboard/menu",
+  "/dashboard/settings",
+  "/dashboard/billing",
+  "/dashboard/notifications",
+  "/dashboard/orders",
+  "/forgot-password",
+  "/menu",
+];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
