@@ -2,14 +2,15 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowUpDown, MapPin, Search, X } from "lucide-react";
-import SelectDropdown from "./SelectDropdown"; // adjust path to where SelectDropdown lives
+import { ArrowUpDown, MapPin, Search, X, Utensils } from "lucide-react";
+import SelectDropdown from "./SelectDropdown";
 
 type State = {
   q: string;
   location: string;
   sort: string;
   under: number | null;
+  dineIn: string;
 };
 
 type Props = {
@@ -51,10 +52,13 @@ export default function VendorsToolbar({
     if (next.sort !== defaultSort) params.set("sort", next.sort);
     if (next.under !== null) params.set("under", String(next.under));
 
+    if (next.dineIn !== "all") {
+      params.set("dine_in", next.dineIn === "yes" ? "true" : "false");
+    }
+
     const query = params.toString();
 
     startTransition(() => {
-      // Use the real pathname so clearing every filter really resets the URL
       router.replace(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
       });
@@ -80,10 +84,17 @@ export default function VendorsToolbar({
     state.q.trim() !== "" ||
     state.location !== "" ||
     state.under !== null ||
-    state.sort !== defaultSort;
+    state.sort !== defaultSort ||
+    state.dineIn !== "all";
 
   function clearAll() {
-    update({ q: "", location: "", sort: defaultSort, under: null });
+    update({
+      q: "",
+      location: "",
+      sort: defaultSort,
+      under: null,
+      dineIn: "all",
+    });
   }
 
   const locationOptions = [
@@ -94,8 +105,13 @@ export default function VendorsToolbar({
     })),
   ];
 
+  const dineInOptions = [
+    { label: "All vendors", value: "all" },
+    { label: "Dine-in available", value: "yes" },
+    { label: "No dine-in", value: "no" },
+  ];
+
   return (
-    // No overflow-hidden here: it would clip the dropdown menus
     <div className="relative rounded-3xl bg-white p-3 shadow-xl shadow-green-950/10 ring-1 ring-black/5 sm:p-4">
       <div
         aria-hidden
@@ -144,6 +160,18 @@ export default function VendorsToolbar({
           options={locationOptions}
           value={state.location}
           onChange={(value) => update({ location: value })}
+        />
+
+        {/* DINE-IN */}
+        <SelectDropdown
+          noMargin
+          className="lg:w-56"
+          triggerClassName="h-12 py-0"
+          ariaLabel="Filter by dine-in availability"
+          icon={<Utensils size={18} />}
+          options={dineInOptions}
+          value={state.dineIn}
+          onChange={(value) => update({ dineIn: value })}
         />
 
         {/* SORT */}

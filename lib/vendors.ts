@@ -2,6 +2,7 @@ import { createSupabaseAdminClient } from "@/lib/admin";
 
 /* ------------------------------------------------------------------
    Shared vendor data for the landing page and the /vendors page.
+
    Server only: it uses the admin client, so never import it from a
    "use client" file.
 
@@ -33,6 +34,9 @@ export type VendorRow = {
   location: string | null;
   cover_image: string | null;
   created_at: string;
+
+  // Whether customers can visit this vendor and eat on the premises.
+  has_dine_in: boolean;
 };
 
 export type PriceStats = {
@@ -67,7 +71,10 @@ type DishIndexEntry = {
 
 async function loadDishes(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
-): Promise<{ rows: Record<string, unknown>[]; error: string | null }> {
+): Promise<{
+  rows: Record<string, unknown>[];
+  error: string | null;
+}> {
   const rows: Record<string, unknown>[] = [];
 
   for (let batch = 0; batch < MAX_BATCHES; batch += 1) {
@@ -80,16 +87,23 @@ async function loadDishes(
       .range(from, from + DB_BATCH - 1);
 
     if (error) {
-      return { rows: [], error: error.message };
+      return {
+        rows: [],
+        error: error.message,
+      };
     }
 
     const chunk = (data ?? []) as unknown as Record<string, unknown>[];
+
     rows.push(...chunk);
 
     if (chunk.length < DB_BATCH) break;
   }
 
-  return { rows, error: null };
+  return {
+    rows,
+    error: null,
+  };
 }
 
 function buildDishIndex(rows: Record<string, unknown>[]) {
@@ -97,17 +111,28 @@ function buildDishIndex(rows: Record<string, unknown>[]) {
 
   for (const row of rows) {
     const vendorId = String(row.vendor_id ?? "");
+
     if (!vendorId) continue;
 
     let entry = index.get(vendorId);
 
     if (!entry) {
-      entry = { min: Infinity, max: 0, sum: 0, count: 0, names: [] };
+      entry = {
+        min: Infinity,
+        max: 0,
+        sum: 0,
+        count: 0,
+        names: [],
+      };
+
       index.set(vendorId, entry);
     }
 
     const name = row[MENU_NAME_COLUMN];
-    if (typeof name === "string" && name) entry.names.push(name);
+
+    if (typeof name === "string" && name) {
+      entry.names.push(name);
+    }
 
     const price = Number(row[MENU_PRICE_COLUMN]);
 
@@ -128,6 +153,7 @@ function buildDishIndex(rows: Record<string, unknown>[]) {
 
 /**
  * Every vendor that should appear publicly, with price stats from its menu.
+ *
  * This is the one place that decides which vendors are listed, so the
  * landing page and /vendors always agree.
  */
@@ -137,10 +163,21 @@ export async function fetchListedVendors(): Promise<ListedVendors> {
   const [vendorsResult, dishesResult] = await Promise.all([
     supabase
       .from("vendors")
-      .select("id, name, slug, location, cover_image, created_at")
+      .select(
+        `
+          id,
+          name,
+          slug,
+          location,
+          cover_image,
+          created_at,
+          has_dine_in
+        `,
+      )
       // TODO: re-enable later to list only active vendors.
       // .in("plan_status", LISTED_STATUSES)
       .not("slug", "is", null),
+
     loadDishes(supabase),
   ]);
 
@@ -164,6 +201,10 @@ export async function fetchListedVendors(): Promise<ListedVendors> {
 
     return {
       ...vendor,
+
+      // Protect the frontend if an existing database record returns null.
+      has_dine_in: vendor.has_dine_in ?? false,
+
       stats:
         entry && entry.count > 0
           ? {
@@ -173,6 +214,7 @@ export async function fetchListedVendors(): Promise<ListedVendors> {
               count: entry.count,
             }
           : null,
+
       dishText: entry ? entry.names.join(" ").toLowerCase() : "",
     };
   });

@@ -13,25 +13,28 @@ import VendorCard from "@/components/reusuable/VendorCard";
 export const metadata: Metadata = {
   title: "Food vendors | MyBukka",
   description:
-    "Browse every food vendor on MyBukka. Search, filter by location and compare dish prices.",
+    "Browse every food vendor on MyBukka. Search, filter by location, compare dish prices and discover dine-in restaurants.",
 };
 
 /* ------------------------------------------------------------------
-   CONFIG. The menu table, price columns and the status filter that
-   decides which vendors are listed live in lib/vendor-directory.ts.
+   CONFIG
 ------------------------------------------------------------------- */
 
 const PAGE_SIZE = 12;
 
 type SortKey = "newest" | "name" | "price_asc" | "price_desc";
+type DineInFilter = "all" | "yes" | "no";
 
-const SORT_OPTIONS: { value: SortKey; label: string; needsPrices: boolean }[] =
-  [
-    { value: "newest", label: "Newest first", needsPrices: false },
-    { value: "name", label: "Name, A to Z", needsPrices: false },
-    { value: "price_asc", label: "Price: low to high", needsPrices: true },
-    { value: "price_desc", label: "Price: high to low", needsPrices: true },
-  ];
+const SORT_OPTIONS: {
+  value: SortKey;
+  label: string;
+  needsPrices: boolean;
+}[] = [
+  { value: "newest", label: "Newest first", needsPrices: false },
+  { value: "name", label: "Name, A to Z", needsPrices: false },
+  { value: "price_asc", label: "Price: low to high", needsPrices: true },
+  { value: "price_desc", label: "Price: high to low", needsPrices: true },
+];
 
 const BUDGET_OPTIONS = [2000, 5000, 10000];
 
@@ -45,6 +48,7 @@ type SearchParams = {
   location?: string;
   sort?: string;
   under?: string;
+  dine_in?: string;
 };
 
 /* ------------------------------------------------------------------
@@ -57,25 +61,45 @@ function buildHref({
   location,
   sort,
   under,
+  dineIn,
 }: {
   page: number;
   q: string;
   location: string;
   sort: SortKey;
   under: number | null;
+  dineIn: DineInFilter;
 }) {
   const params = new URLSearchParams();
 
-  if (page > 1) params.set("page", String(page));
-  if (q) params.set("q", q);
-  if (location) params.set("location", location);
-  if (sort !== "newest") params.set("sort", sort);
-  if (under !== null) params.set("under", String(under));
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  if (q) {
+    params.set("q", q);
+  }
+
+  if (location) {
+    params.set("location", location);
+  }
+
+  if (sort !== "newest") {
+    params.set("sort", sort);
+  }
+
+  if (under !== null) {
+    params.set("under", String(under));
+  }
+
+  if (dineIn === "yes") {
+    params.set("dine_in", "true");
+  } else if (dineIn === "no") {
+    params.set("dine_in", "false");
+  }
 
   const query = params.toString();
 
-  // FIX: never return "" (an empty href means "stay on the current URL",
-  // which is why Previous / page 1 did nothing). "?" resets the query string.
   return query ? `?${query}` : "?";
 }
 
@@ -97,7 +121,9 @@ export default async function VendorsPage({
     pricesEnabled,
   } = await fetchListedVendors();
 
-  /* ---- read and validate URL state ---- */
+  /* --------------------------------------------------------------
+     READ AND VALIDATE URL STATE
+  -------------------------------------------------------------- */
 
   const q = (params.q ?? "").trim().slice(0, 80);
   const location = (params.location ?? "").trim();
@@ -105,23 +131,38 @@ export default async function VendorsPage({
   const requestedSort = SORT_OPTIONS.find(
     (option) => option.value === params.sort,
   );
+
   const sort: SortKey =
     requestedSort && (pricesEnabled || !requestedSort.needsPrices)
       ? requestedSort.value
       : "newest";
 
   const underNumber = Number(params.under);
+
   const under =
     pricesEnabled && BUDGET_OPTIONS.includes(underNumber) ? underNumber : null;
 
-  const currentPage = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
+  const dineIn: DineInFilter =
+    params.dine_in === "true"
+      ? "yes"
+      : params.dine_in === "false"
+        ? "no"
+        : "all";
 
-  /* ---- locations for the filter dropdown ---- */
+  const parsedPage = Number.parseInt(params.page ?? "1", 10);
+
+  const currentPage =
+    Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
+  /* --------------------------------------------------------------
+     LOCATIONS FOR FILTER DROPDOWN
+  -------------------------------------------------------------- */
 
   const locationMap = new Map<string, { name: string; count: number }>();
 
   for (const vendor of allVendors) {
     const name = (vendor.location ?? "").trim();
+
     if (!name) continue;
 
     const key = name.toLowerCase();
@@ -130,7 +171,10 @@ export default async function VendorsPage({
     if (existing) {
       existing.count += 1;
     } else {
-      locationMap.set(key, { name, count: 1 });
+      locationMap.set(key, {
+        name,
+        count: 1,
+      });
     }
   }
 
@@ -138,11 +182,14 @@ export default async function VendorsPage({
     a.name.localeCompare(b.name),
   );
 
-  /* ---- filter ---- */
+  /* --------------------------------------------------------------
+     FILTER VENDORS
+  -------------------------------------------------------------- */
 
   const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
 
   const filtered = allVendors.filter((vendor) => {
+    // Location filter
     if (
       location &&
       (vendor.location ?? "").trim().toLowerCase() !== location.toLowerCase()
@@ -150,31 +197,50 @@ export default async function VendorsPage({
       return false;
     }
 
+    // Budget filter
     if (under !== null && !(vendor.stats && vendor.stats.min <= under)) {
       return false;
     }
 
+    // Dine-in filter
+    if (dineIn === "yes" && !vendor.has_dine_in) {
+      return false;
+    }
+
+    if (dineIn === "no" && vendor.has_dine_in) {
+      return false;
+    }
+
+    // Search filter
     if (tokens.length > 0) {
       const haystack =
         `${vendor.name} ${vendor.slug} ${vendor.location ?? ""} ${vendor.dishText}`.toLowerCase();
 
-      if (!tokens.every((token) => haystack.includes(token))) return false;
+      if (!tokens.every((token) => haystack.includes(token))) {
+        return false;
+      }
     }
 
     return true;
   });
 
-  /* ---- sort ---- */
+  /* --------------------------------------------------------------
+     SORT VENDORS
+  -------------------------------------------------------------- */
 
   filtered.sort((a, b) => {
-    if (sort === "name") return a.name.localeCompare(b.name);
+    if (sort === "name") {
+      return a.name.localeCompare(b.name);
+    }
 
     if (sort === "price_asc" || sort === "price_desc") {
       const priceA = a.stats?.avg ?? null;
       const priceB = b.stats?.avg ?? null;
 
-      if (priceA === null && priceB === null)
+      if (priceA === null && priceB === null) {
         return a.name.localeCompare(b.name);
+      }
+
       if (priceA === null) return 1;
       if (priceB === null) return -1;
 
@@ -184,23 +250,50 @@ export default async function VendorsPage({
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 
-  /* ---- paginate ---- */
+  /* --------------------------------------------------------------
+     PAGINATION
+  -------------------------------------------------------------- */
 
   const totalRecords = filtered.length;
+
   const totalPages = Math.max(1, Math.ceil(totalRecords / PAGE_SIZE));
 
   if (totalRecords > 0 && currentPage > totalPages) {
-    redirect(buildHref({ page: totalPages, q, location, sort, under }));
+    redirect(
+      buildHref({
+        page: totalPages,
+        q,
+        location,
+        sort,
+        under,
+        dineIn,
+      }),
+    );
   }
 
   const from = (currentPage - 1) * PAGE_SIZE;
+
   const pageItems = filtered.slice(from, from + PAGE_SIZE);
 
   function createPageHref(page: number) {
-    return buildHref({ page, q, location, sort, under });
+    return buildHref({
+      page,
+      q,
+      location,
+      sort,
+      under,
+      dineIn,
+    });
   }
 
-  const hasFilters = Boolean(q || location || under !== null);
+  /* --------------------------------------------------------------
+     PAGE METADATA
+  -------------------------------------------------------------- */
+
+  const hasFilters = Boolean(
+    q || location || under !== null || dineIn !== "all",
+  );
+
   const sortLabel =
     SORT_OPTIONS.find((option) => option.value === sort)?.label ??
     "Newest first";
@@ -209,6 +302,12 @@ export default async function VendorsPage({
     (sum, vendor) => sum + (vendor.stats?.count ?? 0),
     0,
   );
+
+  const dineInCount = allVendors.filter((vendor) => vendor.has_dine_in).length;
+
+  /* --------------------------------------------------------------
+     RENDER
+  -------------------------------------------------------------- */
 
   return (
     <main className="min-h-screen bg-[#FBFAF6] pb-20">
@@ -223,10 +322,12 @@ export default async function VendorsPage({
             backgroundSize: "22px 22px",
           }}
         />
+
         <div
           aria-hidden
           className="animate-blob pointer-events-none absolute -left-24 -top-28 h-96 w-96 rounded-full bg-green-500/30 blur-3xl"
         />
+
         <div
           aria-hidden
           className="animate-blob pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl"
@@ -250,8 +351,8 @@ export default async function VendorsPage({
             className="animate-fade-up mt-5 max-w-xl text-base text-green-50/80 sm:text-lg"
             style={{ animationDelay: "80ms" }}
           >
-            Browse every vendor, compare dish prices and open any menu in one
-            tap.
+            Browse food vendors, discover dine-in restaurants, compare dish
+            prices and open any menu in one tap.
           </p>
 
           <div
@@ -259,7 +360,11 @@ export default async function VendorsPage({
             style={{ animationDelay: "160ms" }}
           >
             <HeroStat value={allVendors.length} label="vendors" />
+
             <HeroStat value={locations.length} label="locations" />
+
+            <HeroStat value={dineInCount} label="dine-in vendors" />
+
             {pricesEnabled && <HeroStat value={totalDishes} label="dishes" />}
           </div>
         </div>
@@ -268,23 +373,32 @@ export default async function VendorsPage({
       {/* TOOLBAR */}
       <section className="relative z-10 mx-auto -mt-14 max-w-6xl px-4 sm:px-6">
         <VendorsToolbar
-          initial={{ q, location, sort, under }}
+          initial={{
+            q,
+            location,
+            sort,
+            under,
+            dineIn,
+          }}
           defaultSort="newest"
           locations={locations}
           sortOptions={SORT_OPTIONS.filter(
             (option) => pricesEnabled || !option.needsPrices,
-          ).map(({ value, label }) => ({ value, label }))}
+          ).map(({ value, label }) => ({
+            value,
+            label,
+          }))}
           budgetOptions={pricesEnabled ? BUDGET_OPTIONS : []}
         />
       </section>
 
       {/* RESULTS */}
       <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
-        {vendorsError && (
+        {/* {vendorsError && (
           <div className="mb-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
             Couldn&apos;t load vendors right now. Please try again shortly.
           </div>
-        )}
+        )} */}
 
         {pageItems.length === 0 ? (
           <div className="rounded-3xl border border-stone-200 bg-white p-12 shadow-sm">
@@ -293,7 +407,7 @@ export default async function VendorsPage({
               title={hasFilters ? "No matching vendors" : "No vendors yet"}
               description={
                 hasFilters
-                  ? "Try a different search, another location or a higher budget."
+                  ? "Try a different search, another location, a different dine-in option or a higher budget."
                   : "Vendors will show up here as soon as they go live."
               }
             />
@@ -328,6 +442,7 @@ export default async function VendorsPage({
           </>
         )}
 
+        {/* PAGINATION */}
         {totalRecords > PAGE_SIZE && (
           <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
             <Pagination
@@ -343,13 +458,14 @@ export default async function VendorsPage({
 }
 
 /* ------------------------------------------------------------------
-   PIECES
+   HERO STAT
 ------------------------------------------------------------------- */
 
 function HeroStat({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-2xl bg-white/10 px-4 py-2.5 ring-1 ring-white/15 backdrop-blur">
       <span className="text-lg font-bold">{value.toLocaleString("en-NG")}</span>
+
       <span className="ml-1.5 text-sm text-green-100/80">{label}</span>
     </div>
   );
