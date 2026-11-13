@@ -184,7 +184,7 @@ export default function SettingsForm({ vendorId, initialVendor }: Props) {
   }
 
   return (
-    <div className="max-w-lg">
+    <div className="max-w-[700px]">
       <h1 className="mb-1 text-2xl font-bold text-gray-900">Settings</h1>
 
       <p className="mb-8 text-sm text-gray-500">

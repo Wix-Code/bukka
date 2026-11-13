@@ -6,9 +6,10 @@ import { Sparkles } from "lucide-react";
 
 import EmptyState from "@/components/reusuable/EmptyState";
 import Pagination from "@/components/reusuable/PaginationProps";
-import { fetchListedVendors } from "@/lib/vendors";
 import VendorsToolbar from "@/components/reusuable/VendorToolbar";
 import VendorCard from "@/components/reusuable/VendorCard";
+
+import { fetchListedVendors, type Vendor } from "@/lib/vendors";
 
 export const metadata: Metadata = {
   title: "Food vendors | MyBukka",
@@ -45,52 +46,63 @@ const BUDGET_OPTIONS = [2000, 5000, 10000];
 type SearchParams = {
   page?: string;
   q?: string;
-  location?: string;
+  country?: string;
+  state?: string;
+  lga?: string;
+  city?: string;
   sort?: string;
   under?: string;
   dine_in?: string;
 };
 
+type LocationOption = {
+  name: string;
+  count: number;
+};
+
+type LocationField = "country" | "state" | "lga" | "city";
+
 /* ------------------------------------------------------------------
    HELPERS
 ------------------------------------------------------------------- */
 
+function normalize(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase();
+}
+
 function buildHref({
   page,
   q,
-  location,
+  country,
+  state,
+  lga,
+  city,
   sort,
   under,
   dineIn,
 }: {
   page: number;
   q: string;
-  location: string;
+  country: string;
+  state: string;
+  lga: string;
+  city: string;
   sort: SortKey;
   under: number | null;
   dineIn: DineInFilter;
 }) {
   const params = new URLSearchParams();
 
-  if (page > 1) {
-    params.set("page", String(page));
-  }
+  if (page > 1) params.set("page", String(page));
+  if (q) params.set("q", q);
 
-  if (q) {
-    params.set("q", q);
-  }
+  if (country) params.set("country", country);
+  if (state) params.set("state", state);
+  if (lga) params.set("lga", lga);
+  if (city) params.set("city", city);
 
-  if (location) {
-    params.set("location", location);
-  }
-
-  if (sort !== "newest") {
-    params.set("sort", sort);
-  }
-
-  if (under !== null) {
-    params.set("under", String(under));
-  }
+  if (sort !== "newest") params.set("sort", sort);
+  if (under !== null) params.set("under", String(under));
 
   if (dineIn === "yes") {
     params.set("dine_in", "true");
@@ -101,6 +113,43 @@ function buildHref({
   const query = params.toString();
 
   return query ? `?${query}` : "?";
+}
+
+/**
+ * Creates location dropdown options from the vendors currently
+ * available in the database.
+ *
+ * The matches callback allows each location level to depend on
+ * the selections made above it.
+ */
+function getLocationOptions(
+  vendors: Vendor[],
+  field: LocationField,
+  matches: (vendor: Vendor) => boolean = () => true,
+): LocationOption[] {
+  const map = new Map<string, LocationOption>();
+
+  for (const vendor of vendors) {
+    if (!matches(vendor)) continue;
+
+    const name = (vendor[field] ?? "").trim();
+
+    if (!name) continue;
+
+    const key = name.toLowerCase();
+    const existing = map.get(key);
+
+    if (existing) {
+      existing.count += 1;
+    } else {
+      map.set(key, {
+        name,
+        count: 1,
+      });
+    }
+  }
+
+  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /* ------------------------------------------------------------------
@@ -126,7 +175,11 @@ export default async function VendorsPage({
   -------------------------------------------------------------- */
 
   const q = (params.q ?? "").trim().slice(0, 80);
-  const location = (params.location ?? "").trim();
+
+  const country = (params.country ?? "").trim();
+  const state = (params.state ?? "").trim();
+  const lga = (params.lga ?? "").trim();
+  const city = (params.city ?? "").trim();
 
   const requestedSort = SORT_OPTIONS.find(
     (option) => option.value === params.sort,
@@ -155,32 +208,41 @@ export default async function VendorsPage({
     Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
   /* --------------------------------------------------------------
-     LOCATIONS FOR FILTER DROPDOWN
+     LOCATION FILTER OPTIONS
+
+     Country -> State -> LGA -> City
+
+     Each dropdown only shows locations that have vendors matching
+     the selections above it.
   -------------------------------------------------------------- */
 
-  const locationMap = new Map<string, { name: string; count: number }>();
+  const countries = getLocationOptions(allVendors, "country");
 
-  for (const vendor of allVendors) {
-    const name = (vendor.location ?? "").trim();
-
-    if (!name) continue;
-
-    const key = name.toLowerCase();
-    const existing = locationMap.get(key);
-
-    if (existing) {
-      existing.count += 1;
-    } else {
-      locationMap.set(key, {
-        name,
-        count: 1,
-      });
-    }
-  }
-
-  const locations = Array.from(locationMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
+  const states = getLocationOptions(
+    allVendors,
+    "state",
+    (vendor) => !country || normalize(vendor.country) === normalize(country),
   );
+
+  const lgas = getLocationOptions(allVendors, "lga", (vendor) => {
+    const matchesCountry =
+      !country || normalize(vendor.country) === normalize(country);
+
+    const matchesState = !state || normalize(vendor.state) === normalize(state);
+
+    return matchesCountry && matchesState;
+  });
+
+  const cities = getLocationOptions(allVendors, "city", (vendor) => {
+    const matchesCountry =
+      !country || normalize(vendor.country) === normalize(country);
+
+    const matchesState = !state || normalize(vendor.state) === normalize(state);
+
+    const matchesLga = !lga || normalize(vendor.lga) === normalize(lga);
+
+    return matchesCountry && matchesState && matchesLga;
+  });
 
   /* --------------------------------------------------------------
      FILTER VENDORS
@@ -189,20 +251,32 @@ export default async function VendorsPage({
   const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
 
   const filtered = allVendors.filter((vendor) => {
-    // Location filter
-    if (
-      location &&
-      (vendor.location ?? "").trim().toLowerCase() !== location.toLowerCase()
-    ) {
+    // Country
+    if (country && normalize(vendor.country) !== normalize(country)) {
       return false;
     }
 
-    // Budget filter
+    // State
+    if (state && normalize(vendor.state) !== normalize(state)) {
+      return false;
+    }
+
+    // LGA
+    if (lga && normalize(vendor.lga) !== normalize(lga)) {
+      return false;
+    }
+
+    // City
+    if (city && normalize(vendor.city) !== normalize(city)) {
+      return false;
+    }
+
+    // Budget
     if (under !== null && !(vendor.stats && vendor.stats.min <= under)) {
       return false;
     }
 
-    // Dine-in filter
+    // Dine-in
     if (dineIn === "yes" && !vendor.has_dine_in) {
       return false;
     }
@@ -211,10 +285,18 @@ export default async function VendorsPage({
       return false;
     }
 
-    // Search filter
+    // Search
     if (tokens.length > 0) {
-      const haystack =
-        `${vendor.name} ${vendor.slug} ${vendor.location ?? ""} ${vendor.dishText}`.toLowerCase();
+      const haystack = `
+        ${vendor.name}
+        ${vendor.slug}
+        ${vendor.location ?? ""}
+        ${vendor.country ?? ""}
+        ${vendor.state ?? ""}
+        ${vendor.lga ?? ""}
+        ${vendor.city ?? ""}
+        ${vendor.dishText}
+      `.toLowerCase();
 
       if (!tokens.every((token) => haystack.includes(token))) {
         return false;
@@ -263,7 +345,10 @@ export default async function VendorsPage({
       buildHref({
         page: totalPages,
         q,
-        location,
+        country,
+        state,
+        lga,
+        city,
         sort,
         under,
         dineIn,
@@ -272,14 +357,16 @@ export default async function VendorsPage({
   }
 
   const from = (currentPage - 1) * PAGE_SIZE;
-
   const pageItems = filtered.slice(from, from + PAGE_SIZE);
 
   function createPageHref(page: number) {
     return buildHref({
       page,
       q,
-      location,
+      country,
+      state,
+      lga,
+      city,
       sort,
       under,
       dineIn,
@@ -291,7 +378,7 @@ export default async function VendorsPage({
   -------------------------------------------------------------- */
 
   const hasFilters = Boolean(
-    q || location || under !== null || dineIn !== "all",
+    q || country || state || lga || city || under !== null || dineIn !== "all",
   );
 
   const sortLabel =
@@ -361,7 +448,7 @@ export default async function VendorsPage({
           >
             <HeroStat value={allVendors.length} label="vendors" />
 
-            <HeroStat value={locations.length} label="locations" />
+            <HeroStat value={cities.length} label="vendor cities" />
 
             <HeroStat value={dineInCount} label="dine-in vendors" />
 
@@ -375,13 +462,19 @@ export default async function VendorsPage({
         <VendorsToolbar
           initial={{
             q,
-            location,
+            country,
+            state,
+            lga,
+            city,
             sort,
             under,
             dineIn,
           }}
           defaultSort="newest"
-          locations={locations}
+          countries={countries}
+          states={states}
+          lgas={lgas}
+          cities={cities}
           sortOptions={SORT_OPTIONS.filter(
             (option) => pricesEnabled || !option.needsPrices,
           ).map(({ value, label }) => ({
@@ -407,7 +500,7 @@ export default async function VendorsPage({
               title={hasFilters ? "No matching vendors" : "No vendors yet"}
               description={
                 hasFilters
-                  ? "Try a different search, another location, a different dine-in option or a higher budget."
+                  ? "Try a different search, another country, state, LGA or city, a different dine-in option or a higher budget."
                   : "Vendors will show up here as soon as they go live."
               }
             />

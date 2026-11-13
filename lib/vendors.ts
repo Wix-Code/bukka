@@ -1,22 +1,17 @@
 import { createSupabaseAdminClient } from "@/lib/admin";
 
 /* ------------------------------------------------------------------
-   Shared vendor data for the landing page and the /vendors page.
+   SHARED VENDOR DATA
 
-   Server only: it uses the admin client, so never import it from a
-   "use client" file.
+   Server only: this file uses the Supabase admin client.
+   Never import it into a "use client" component.
 
-   CONFIG. Adjust these if your schema differs.
    Prices are assumed to be stored in naira.
 ------------------------------------------------------------------- */
 
-// TODO: status filter is switched off, so every vendor is listed for now.
-// Re-enable this and the `.in("plan_status", ...)` line in fetchListedVendors
-// to show only vendors with these plan_status values publicly.
-// const LISTED_STATUSES = ["active"];
-
 // Menu table used for price sorting, price filtering and dish search.
 export const MENU_TABLE = "menu_items";
+
 const MENU_PRICE_COLUMN = "price";
 const MENU_NAME_COLUMN = "name";
 
@@ -32,10 +27,15 @@ export type VendorRow = {
   name: string;
   slug: string;
   location: string | null;
+
+  // Structured vendor location.
+  country: string | null;
+  state: string | null;
+  lga: string | null;
+  city: string | null;
+
   cover_image: string | null;
   created_at: string;
-
-  // Whether customers can visit this vendor and eat on the premises.
   has_dine_in: boolean;
 };
 
@@ -130,8 +130,8 @@ function buildDishIndex(rows: Record<string, unknown>[]) {
 
     const name = row[MENU_NAME_COLUMN];
 
-    if (typeof name === "string" && name) {
-      entry.names.push(name);
+    if (typeof name === "string" && name.trim()) {
+      entry.names.push(name.trim());
     }
 
     const price = Number(row[MENU_PRICE_COLUMN]);
@@ -152,10 +152,11 @@ function buildDishIndex(rows: Record<string, unknown>[]) {
 ------------------------------------------------------------------- */
 
 /**
- * Every vendor that should appear publicly, with price stats from its menu.
+ * Fetches every vendor that should appear publicly, together with
+ * price statistics and searchable dish names.
  *
- * This is the one place that decides which vendors are listed, so the
- * landing page and /vendors always agree.
+ * The landing page and /vendors page should both use this function
+ * so they display the same vendor records.
  */
 export async function fetchListedVendors(): Promise<ListedVendors> {
   const supabase = createSupabaseAdminClient();
@@ -169,6 +170,10 @@ export async function fetchListedVendors(): Promise<ListedVendors> {
           name,
           slug,
           location,
+          country,
+          state,
+          lga,
+          city,
           cover_image,
           created_at,
           has_dine_in
@@ -202,7 +207,7 @@ export async function fetchListedVendors(): Promise<ListedVendors> {
     return {
       ...vendor,
 
-      // Protect the frontend if an existing database record returns null.
+      // Protect the frontend if an existing record returns null.
       has_dine_in: vendor.has_dine_in ?? false,
 
       stats:

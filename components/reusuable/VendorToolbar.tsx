@@ -2,31 +2,53 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowUpDown, MapPin, Search, X, Utensils } from "lucide-react";
+import {
+  ArrowUpDown,
+  MapPin,
+  Search,
+  X,
+  Utensils,
+  Globe,
+  Map,
+  Building2,
+  LocateFixed,
+} from "lucide-react";
 import SelectDropdown from "./SelectDropdown";
+
+type FilterOption = {
+  name: string;
+  count: number;
+};
 
 type State = {
   q: string;
-  location: string;
+  country: string;
+  state: string;
+  lga: string;
+  city: string;
   sort: string;
   under: number | null;
   dineIn: string;
 };
 
 type Props = {
-  basePath?: string;
   initial: State;
   defaultSort: string;
-  locations: { name: string; count: number }[];
+  countries: FilterOption[];
+  states: FilterOption[];
+  lgas: FilterOption[];
+  cities: FilterOption[];
   sortOptions: { value: string; label: string }[];
   budgetOptions: number[];
 };
 
 export default function VendorsToolbar({
-  basePath,
   initial,
   defaultSort,
-  locations,
+  countries,
+  states,
+  lgas,
+  cities,
   sortOptions,
   budgetOptions,
 }: Props) {
@@ -48,9 +70,18 @@ export default function VendorsToolbar({
     const params = new URLSearchParams();
 
     if (next.q.trim()) params.set("q", next.q.trim());
-    if (next.location) params.set("location", next.location);
-    if (next.sort !== defaultSort) params.set("sort", next.sort);
-    if (next.under !== null) params.set("under", String(next.under));
+    if (next.country) params.set("country", next.country);
+    if (next.state) params.set("state", next.state);
+    if (next.lga) params.set("lga", next.lga);
+    if (next.city) params.set("city", next.city);
+
+    if (next.sort !== defaultSort) {
+      params.set("sort", next.sort);
+    }
+
+    if (next.under !== null) {
+      params.set("under", String(next.under));
+    }
 
     if (next.dineIn !== "all") {
       params.set("dine_in", next.dineIn === "yes" ? "true" : "false");
@@ -82,7 +113,10 @@ export default function VendorsToolbar({
 
   const hasActive =
     state.q.trim() !== "" ||
-    state.location !== "" ||
+    state.country !== "" ||
+    state.state !== "" ||
+    state.lga !== "" ||
+    state.city !== "" ||
     state.under !== null ||
     state.sort !== defaultSort ||
     state.dineIn !== "all";
@@ -90,18 +124,45 @@ export default function VendorsToolbar({
   function clearAll() {
     update({
       q: "",
-      location: "",
+      country: "",
+      state: "",
+      lga: "",
+      city: "",
       sort: defaultSort,
       under: null,
       dineIn: "all",
     });
   }
 
-  const locationOptions = [
-    { label: "All locations", value: "" },
-    ...locations.map((location) => ({
-      label: `${location.name} (${location.count})`,
-      value: location.name,
+  const countryOptions = [
+    { label: "All countries", value: "" },
+    ...countries.map((item) => ({
+      label: `${item.name} (${item.count})`,
+      value: item.name,
+    })),
+  ];
+
+  const stateOptions = [
+    { label: "All states", value: "" },
+    ...states.map((item) => ({
+      label: `${item.name} (${item.count})`,
+      value: item.name,
+    })),
+  ];
+
+  const lgaOptions = [
+    { label: "All LGAs", value: "" },
+    ...lgas.map((item) => ({
+      label: `${item.name} (${item.count})`,
+      value: item.name,
+    })),
+  ];
+
+  const cityOptions = [
+    { label: "All cities", value: "" },
+    ...cities.map((item) => ({
+      label: `${item.name} (${item.count})`,
+      value: item.name,
     })),
   ];
 
@@ -120,9 +181,9 @@ export default function VendorsToolbar({
         }`}
       />
 
-      <div className="flex flex-col gap-3 lg:flex-row">
+      <div className="flex flex-col gap-3">
         {/* SEARCH */}
-        <label className="relative block flex-1">
+        <label className="relative block">
           <span className="sr-only">Search vendors or dishes</span>
 
           <Search
@@ -150,41 +211,109 @@ export default function VendorsToolbar({
           )}
         </label>
 
-        {/* LOCATION */}
-        <SelectDropdown
-          noMargin
-          className="lg:w-60"
-          triggerClassName="h-12 py-0"
-          ariaLabel="Filter by location"
-          icon={<MapPin size={18} />}
-          options={locationOptions}
-          value={state.location}
-          onChange={(value) => update({ location: value })}
-        />
+        {/* LOCATION FILTERS */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Filter by country"
+            icon={<Globe size={18} />}
+            options={countryOptions}
+            value={state.country}
+            onChange={(value) =>
+              update({
+                country: value,
+                state: "",
+                lga: "",
+                city: "",
+              })
+            }
+          />
 
-        {/* DINE-IN */}
-        <SelectDropdown
-          noMargin
-          className="lg:w-56"
-          triggerClassName="h-12 py-0"
-          ariaLabel="Filter by dine-in availability"
-          icon={<Utensils size={18} />}
-          options={dineInOptions}
-          value={state.dineIn}
-          onChange={(value) => update({ dineIn: value })}
-        />
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Filter by state"
+            icon={<Map size={18} />}
+            options={stateOptions}
+            value={state.state}
+            onChange={(value) =>
+              update({
+                state: value,
+                lga: "",
+                city: "",
+              })
+            }
+          />
 
-        {/* SORT */}
-        <SelectDropdown
-          noMargin
-          className="lg:w-56"
-          triggerClassName="h-12 py-0"
-          ariaLabel="Sort vendors"
-          icon={<ArrowUpDown size={18} />}
-          options={sortOptions}
-          value={state.sort}
-          onChange={(value) => update({ sort: value })}
-        />
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Filter by LGA"
+            icon={<Building2 size={18} />}
+            options={lgaOptions}
+            value={state.lga}
+            onChange={(value) =>
+              update({
+                lga: value,
+                city: "",
+              })
+            }
+          />
+
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Filter by city"
+            icon={<LocateFixed size={18} />}
+            options={cityOptions}
+            value={state.city}
+            onChange={(value) => update({ city: value })}
+          />
+
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Filter by dine-in availability"
+            icon={<Utensils size={18} />}
+            options={dineInOptions}
+            value={state.dineIn}
+            onChange={(value) => update({ dineIn: value })}
+          />
+
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Sort vendors"
+            icon={<ArrowUpDown size={18} />}
+            options={sortOptions}
+            value={state.sort}
+            onChange={(value) => update({ sort: value })}
+          />
+        </div>
+
+        {/* OTHER FILTERS */}
+        {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Filter by dine-in availability"
+            icon={<Utensils size={18} />}
+            options={dineInOptions}
+            value={state.dineIn}
+            onChange={(value) => update({ dineIn: value })}
+          />
+
+          <SelectDropdown
+            noMargin
+            triggerClassName="h-12 py-0"
+            ariaLabel="Sort vendors"
+            icon={<ArrowUpDown size={18} />}
+            options={sortOptions}
+            value={state.sort}
+            onChange={(value) => update({ sort: value })}
+          />
+        </div> */}
       </div>
 
       {/* BUDGET CHIPS */}
