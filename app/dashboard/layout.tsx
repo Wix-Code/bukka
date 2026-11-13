@@ -1,7 +1,6 @@
 import Sidebar from "@/components/dashboard/SideBar";
 import Topbar from "@/components/dashboard/TopBar";
 import { createSupabaseServerClient } from "@/lib/server";
-import { getVendorBySlug } from "@/lib/vendors";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
