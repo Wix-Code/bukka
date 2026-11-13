@@ -399,34 +399,29 @@ export default async function VendorsPage({
   return (
     <main className="min-h-screen bg-[#FBFAF6] pb-20">
       {/* HERO */}
-      <section className="relative overflow-hidden bg-[#0C3B26] pb-28 pt-16 text-white sm:pb-32 sm:pt-24">
-        <div
+      <section className="relative isolate overflow-hidden bg-[#0C3B26] pb-28 pt-16 text-white sm:pb-36 sm:pt-28">
+        {/* Photo: put yours at /public/images/vendors-hero.jpg */}
+        <img
+          src="/images/buk.png"
+          alt=""
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-60"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(255,255,255,0.09) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-          }}
+          fetchPriority="high"
+          className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
         />
 
+        {/* Brand-colour overlay */}
         <div
           aria-hidden
-          className="animate-blob pointer-events-none absolute -left-24 -top-28 h-96 w-96 rounded-full bg-green-500/30 blur-3xl"
-        />
-
-        <div
-          aria-hidden
-          className="animate-blob pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-amber-400/20 blur-3xl"
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-[#0C3B26]/90 via-[#0C3B26]/80 to-[#0C3B26]/90 sm:bg-gradient-to-r sm:from-[#0C3B26] sm:via-[#0C3B26]/80 sm:to-[#0C3B26]/15"
         />
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <span className="animate-fade-up inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-green-100 ring-1 ring-white/15 backdrop-blur">
+          <span className="animate-fade-up inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-green-100 ring-1 ring-white/20 backdrop-blur">
             <Sparkles size={14} />
             Fresh meals from trusted local kitchens
           </span>
 
-          <h1 className="animate-fade-up mt-6 max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
+          <h1 className="animate-fade-up mt-6 max-w-2xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
             Find your next favourite{" "}
             <span className="bg-gradient-to-r from-green-300 to-amber-200 bg-clip-text text-transparent">
               bukka
@@ -435,25 +430,36 @@ export default async function VendorsPage({
           </h1>
 
           <p
-            className="animate-fade-up mt-5 max-w-xl text-base text-green-50/80 sm:text-lg"
+            className="animate-fade-up mt-5 max-w-xl text-base text-green-50/85 sm:text-lg"
             style={{ animationDelay: "80ms" }}
           >
             Browse food vendors, discover dine-in restaurants, compare dish
             prices and open any menu in one tap.
           </p>
 
-          <div
-            className="animate-fade-up mt-8 flex flex-wrap gap-3"
+          {/* One frosted strip instead of separate pills */}
+          <dl
+            className="animate-fade-up mt-10 inline-grid max-w-full grid-flow-col divide-x divide-white/15 overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md"
             style={{ animationDelay: "160ms" }}
           >
-            <HeroStat value={allVendors.length} label="vendors" />
-
-            <HeroStat value={cities.length} label="vendor cities" />
-
-            <HeroStat value={dineInCount} label="dine-in vendors" />
-
-            {pricesEnabled && <HeroStat value={totalDishes} label="dishes" />}
-          </div>
+            {[
+              { value: allVendors.length, label: "Vendors" },
+              { value: cities.length, label: "Cities" },
+              { value: dineInCount, label: "Dine-in" },
+              ...(pricesEnabled
+                ? [{ value: totalDishes, label: "Dishes" }]
+                : []),
+            ].map((stat) => (
+              <div key={stat.label} className="px-5 py-3.5 sm:px-8 sm:py-4">
+                <dd className="text-xl font-bold leading-none sm:text-3xl">
+                  {stat.value.toLocaleString("en-NG")}
+                </dd>
+                <dt className="mt-1.5 text-[11px] uppercase tracking-wider text-green-100/80 sm:text-xs">
+                  {stat.label}
+                </dt>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
