@@ -91,9 +91,9 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={closeMenu}
-              className="rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-green-700 sm:px-6 sm:text-base"
+              className="rounded-full hidden md:flex bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-green-700 sm:px-6 sm:text-base"
             >
-              Login            
+              Login
             </Link>
 
             {/* Mobile Hamburger */}
@@ -185,7 +185,7 @@ export default function Navbar() {
                   onClick={closeMenu}
                   className="flex w-full items-center justify-center gap-2 rounded-full bg-green-600 py-4 font-semibold text-white shadow-lg transition hover:bg-green-700"
                 >
-                  Create an Account
+                  Be a Vendor
                   <ArrowRight size={18} />
                 </Link>
 
