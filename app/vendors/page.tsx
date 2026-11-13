@@ -525,7 +525,7 @@ export default async function VendorsPage({
               <p className="text-xs text-stone-400">Sorted by {sortLabel}</p>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid w-full min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {pageItems.map((vendor, index) => (
                 <VendorCard
                   key={vendor.id}

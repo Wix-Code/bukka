@@ -2,11 +2,6 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin, UtensilsCrossed } from "lucide-react";
 import { Vendor } from "@/lib/vendors";
 
-/* ------------------------------------------------------------------
-   The one vendor card, used on /vendors and on the landing page.
-   Change it here and both pages follow.
-------------------------------------------------------------------- */
-
 const AVATAR_GRADIENTS = [
   "from-orange-400 to-rose-500",
   "from-emerald-400 to-green-600",
@@ -59,17 +54,17 @@ export default function VendorCard({
   return (
     <Link
       href={`/vendor/${vendor.slug}`}
-      className="animate-fade-up group flex flex-col rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-xl hover:shadow-green-900/5"
+      className="animate-fade-up group flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-xl hover:shadow-green-900/5"
       style={{ animationDelay: `${index * 45}ms` }}
     >
-      <div className="flex items-start gap-4">
+      {/* Vendor information */}
+      <div className="flex w-full min-w-0 items-start gap-3 sm:gap-4">
         <div
           className={`relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} text-lg font-bold text-white shadow-inner`}
         >
           {initialsOf(vendor.name)}
 
           {vendor.cover_image && (
-            // Sits on top of the initials, so a broken URL falls back to them.
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={vendor.cover_image}
@@ -81,8 +76,8 @@ export default function VendorCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate text-base font-semibold text-stone-900">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h3 className="min-w-0 flex-1 break-words text-base font-semibold text-stone-900">
               {vendor.name}
             </h3>
 
@@ -93,50 +88,55 @@ export default function VendorCard({
             )}
           </div>
 
-          <p className="mt-1 flex items-center gap-1 text-sm text-stone-500">
+          <p className="mt-1 flex min-w-0 items-center gap-1 text-sm text-stone-500">
             <MapPin size={14} className="shrink-0 text-stone-400" />
-            <span className="truncate">
+
+            <span className="min-w-0 truncate">
               {vendor.location?.trim() || "Location not set"}
             </span>
           </p>
         </div>
       </div>
 
-      <div className="mt-5 flex-1 rounded-2xl bg-stone-50 p-4">
+      {/* Pricing information */}
+      <div className="mt-5 flex min-h-[130px] w-full min-w-0 flex-1 flex-col rounded-2xl bg-stone-50 p-4">
         {stats ? (
           <>
             <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
               Average dish price
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-stone-900">
+            <p className="mt-1 break-words text-2xl font-bold tabular-nums text-stone-900">
               {formatNaira(stats.avg)}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-700">
+            <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-xs">
+              <span className="max-w-full break-words rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-700">
                 {stats.min === stats.max
                   ? formatNaira(stats.min)
                   : `${formatNaira(stats.min)} to ${formatNaira(stats.max)}`}
               </span>
 
-              <span className="text-stone-400">
+              <span className="shrink-0 text-stone-400">
                 {stats.count} {stats.count === 1 ? "dish" : "dishes"}
               </span>
             </div>
           </>
         ) : (
-          <div className="flex h-full min-h-[84px] flex-col items-center justify-center gap-1.5 text-stone-400">
+          <div className="flex flex-1 flex-col items-center justify-center gap-1.5 text-stone-400">
             <UtensilsCrossed size={20} />
             <p className="text-xs">Menu coming soon</p>
           </div>
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-4">
-        <span className="text-sm font-semibold text-green-700">View menu</span>
+      {/* Footer */}
+      <div className="mt-4 flex w-full min-w-0 items-center justify-between gap-3 border-t border-stone-100 pt-4">
+        <span className="min-w-0 text-sm font-semibold text-green-700">
+          View menu
+        </span>
 
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-green-700 transition group-hover:bg-green-600 group-hover:text-white">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700 transition group-hover:bg-green-600 group-hover:text-white">
           <ArrowUpRight size={16} />
         </span>
       </div>
