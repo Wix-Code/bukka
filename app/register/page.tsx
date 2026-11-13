@@ -13,6 +13,7 @@ export default function Signup() {
   const [restaurantName, setRestaurantName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [hasDineIn, setHasDineIn] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export default function Signup() {
           emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             restaurant_name: name,
+            has_dine_in: hasDineIn,
           },
         },
       });
@@ -68,9 +70,6 @@ export default function Signup() {
         return;
       }
 
-      // Some Supabase configurations return an obfuscated
-      // user object when an email already exists.
-      // An empty identities array may indicate this case.
       if (
         data.user &&
         Array.isArray(data.user.identities) &&
@@ -210,6 +209,55 @@ export default function Signup() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+
+                {/* Dine-in availability */}
+                <div className="mb-6 rounded-2xl border border-gray-200 bg-[#fffdf7] p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-gray-900">
+                        Do you have an eatery?
+                      </h3>
+
+                      <p className="mt-1 text-sm leading-6 text-gray-500">
+                        Can customers visit your location and sit down to enjoy
+                        their meals?
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={hasDineIn}
+                      aria-label="Dine-in availability"
+                      onClick={() => setHasDineIn((prev) => !prev)}
+                      className={`relative mt-1 inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                        hasDineIn ? "bg-green-600" : "bg-gray-300"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                          hasDineIn ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-3">
+                    <span className="text-sm font-medium text-gray-600">
+                      Dine-in availability
+                    </span>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        hasDineIn
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {hasDineIn ? "Yes, available" : "No, not available"}
+                    </span>
+                  </div>
+                </div>
 
                 {error && (
                   <div

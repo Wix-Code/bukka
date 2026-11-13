@@ -17,6 +17,14 @@ type SelectDropdownProps = {
   disabled?: boolean;
   required?: boolean;
   className?: string;
+  /** Optional icon shown at the start of the trigger */
+  icon?: React.ReactNode;
+  /** Accessible name when there is no visible `label` */
+  ariaLabel?: string;
+  /** Removes the default bottom margin (use inside toolbars / flex rows) */
+  noMargin?: boolean;
+  /** Extra classes for the trigger button, e.g. "h-12" */
+  triggerClassName?: string;
 };
 
 export default function SelectDropdown({
@@ -28,6 +36,10 @@ export default function SelectDropdown({
   disabled = false,
   required = false,
   className = "",
+  icon,
+  ariaLabel,
+  noMargin = false,
+  triggerClassName = "",
 }: SelectDropdownProps) {
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -143,7 +155,10 @@ export default function SelectDropdown({
   }
 
   return (
-    <div ref={dropdownRef} className={`relative mb-4 ${className}`}>
+    <div
+      ref={dropdownRef}
+      className={`relative ${noMargin ? "" : "mb-4"} ${className}`}
+    >
       {label && (
         <label
           id={`${id}-label`}
@@ -162,6 +177,7 @@ export default function SelectDropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${id}-listbox`}
+        aria-label={!label ? ariaLabel : undefined}
         aria-labelledby={label ? `${id}-label ${id}-value` : undefined}
         onClick={() => {
           if (open) {
@@ -172,19 +188,22 @@ export default function SelectDropdown({
           }
         }}
         onKeyDown={handleTriggerKeyDown}
-        className={`flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-3 text-left text-sm outline-none transition ${
+        className={`flex w-full items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 text-left text-sm outline-none transition ${
           open
             ? "border-green-600 ring-2 ring-green-100"
             : "border-gray-200 hover:border-gray-300"
-        } disabled:cursor-not-allowed disabled:opacity-50`}
+        } disabled:cursor-not-allowed disabled:opacity-50 ${triggerClassName}`}
       >
-        <span
-          id={`${id}-value`}
-          className={
-            selectedOption ? "font-medium text-gray-900" : "text-gray-400"
-          }
-        >
-          {selectedOption?.label ?? placeholder}
+        <span className="flex min-w-0 items-center gap-3">
+          {icon && <span className="shrink-0 text-gray-400">{icon}</span>}
+          <span
+            id={`${id}-value`}
+            className={`truncate ${
+              selectedOption ? "font-medium text-gray-900" : "text-gray-400"
+            }`}
+          >
+            {selectedOption?.label ?? placeholder}
+          </span>
         </span>
 
         <ChevronDown
@@ -200,7 +219,7 @@ export default function SelectDropdown({
         <div
           id={`${id}-listbox`}
           role="listbox"
-          aria-label={label ?? placeholder}
+          aria-label={label ?? ariaLabel ?? placeholder}
           className="absolute left-0 z-40 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-gray-100 bg-white p-2 shadow-xl"
         >
           {options.length === 0 ? (

@@ -7,9 +7,11 @@ import { Menu, X, ArrowRight, LogIn } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 const navLinks = [
-  { name: "How it works", href: "#how-it-works" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "For Vendors", href: "#vendors" },
+  { name: "Home", href: "/" },
+  { name: "Vendors", href: "/vendors" },
+  { name: "How it works", href: "/#how-it-works" },
+  { name: "Pricing", href: "/#pricing" },
+  { name: "About", href: "/#about" },
 ];
 
 export default function Navbar() {
@@ -56,7 +58,7 @@ export default function Navbar() {
             />
 
             <span className="hidden text-2xl font-bold text-green-600 md:block">
-              BukaOnline
+              Bukka
             </span>
           </Link>
 
@@ -72,9 +74,9 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <Link href="/login" className="transition hover:text-green-600">
+            {/* <Link href="/login" className="transition hover:text-green-600">
               Login
-            </Link>
+            </Link> */}
           </div>
 
           {/* Right Controls */}
@@ -84,7 +86,14 @@ export default function Navbar() {
               onClick={closeMenu}
               className="rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-green-700 sm:px-6 sm:text-base"
             >
-              Get Started
+              Be a Vendor
+            </Link>
+            <Link
+              href="/login"
+              onClick={closeMenu}
+              className="rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-green-700 sm:px-6 sm:text-base"
+            >
+              Login            
             </Link>
 
             {/* Mobile Hamburger */}

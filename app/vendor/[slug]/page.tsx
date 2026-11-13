@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import VendorHeader from "@/components/vendor/VendorHeader";
-import { getVendorBySlug, getVendorMenu, recordPageView } from "@/lib/vendors";
 import { createSupabaseServerClient } from "@/lib/server";
 import MenuSection from "@/components/reusuable/MenuSection";
 import Pagination from "@/components/reusuable/PaginationProps";
+import { getVendorBySlug, getVendorMenu, recordPageView } from "@/lib/vendors-stop-gap";
 
 const FALLBACK_COVER_IMAGE =
   "https://images.unsplash.com/photo-1600891964092-4316c288032e";
@@ -132,9 +132,9 @@ export default async function VendorPage({ params, searchParams }: Props) {
         />
       </div>
 
-      <footer className="pb-10 text-center">
+      {/* <footer className="pb-10 text-center">
         <p className="text-xs text-gray-400">Powered by Bukka</p>
-      </footer>
+      </footer> */}
     </main>
   );
 }
