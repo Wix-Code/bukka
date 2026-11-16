@@ -402,7 +402,7 @@ export default async function VendorsPage({
       <section className="relative isolate overflow-hidden bg-[#0C3B26] pb-28 pt-16 text-white sm:pb-36 sm:pt-28">
         {/* Photo: put yours at /public/images/vendors-hero.jpg */}
         <img
-          src="/images/buk.png"
+          src="https://res.cloudinary.com/dxgw4sl2o/image/upload/v1794849009/buk_np01tb.png"
           alt=""
           aria-hidden
           fetchPriority="high"
