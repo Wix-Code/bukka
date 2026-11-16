@@ -289,7 +289,7 @@ export default function FoodCard({
                     disabled={placing}
                     className="mt-5 w-full cursor-pointer rounded-full bg-green-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-green-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
-                    {placing ? "Placing order…" : `Order ${food.name}`}
+                    {placing ? "Placing order…" : `Order`}
                   </button>
                 )}
               </div>
